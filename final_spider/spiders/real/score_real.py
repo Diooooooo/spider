@@ -29,6 +29,12 @@ class ScoreSpider(scrapy.Spider):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
                       self.parse_detail_info)
 
+    def parse_item_url_info(self, response):
+        types = ['总榜单', '主场', '客场', '上半场', '下半场']
+        for u in response.xpath('//div[@id="match_hot_div"]/a'):
+            if u in types:
+                pass
+
     def parse_detail_info(self, response):
         for r in response.xpath('//tbody[@id="hot_score_tbody"]/tr'):
             score = ScoreItem()

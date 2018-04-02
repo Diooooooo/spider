@@ -28,16 +28,28 @@ def parse_season_history_ouzhi(response):
             ods['season_fid'] = str(response.url).split('-')[1].split(".")[0]
             ods['group_name'] = '欧赔'
             ods['league_name'] = t.xpath('td[@class="tb_plgs"]/@title').extract_first()
-            ods['league_win'] = t.xpath('td[3]/table/tbody/tr[1]/td[1]/text()').extract_first()
-            ods['league_deuce'] = t.xpath('td[3]/table/tbody/tr[1]/td[2]/text()').extract_first()
-            ods['league_lose'] = t.xpath('td[3]/table/tbody/tr[1]/td[3]/text()').extract_first()
-            final_win = t.xpath('td[3]/table/tbody/tr[2]/td[1]/text()').extract_first()
-            final_lose = t.xpath('td[3]/table/tbody/tr[2]/td[3]/text()').extract_first()
+            win = t.xpath('td[5]/table/tbody/tr[1]/td[1]/text()').extract_first()
+            deuce = t.xpath('td[5]/table/tbody/tr[1]/td[2]/text()').extract_first()
+            lose = t.xpath('td[5]/table/tbody/tr[1]/td[3]/text()').extract_first()
+            final_win = t.xpath('td[3]/table/tbody/tr/td[1]/text()').extract_first()
+            final_lose = t.xpath('td[3]/table/tbody/tr/td[3]/text()').extract_first()
+            final_deuce = t.xpath('td[3]/table/tbody/tr/td[2]/text()').extract_first()
+            if '↑' in win or '↓' in win:
+                win = win[:-1]
+            if '↑' in lose or '↓' in lose:
+                lose = lose[:-1]
+            if '↑' in deuce or '↓' in deuce:
+                deuce = deuce[:-1]
             if '↑' in final_win or '↓' in final_win:
                 final_win = final_win[:-1]
             if '↑' in final_lose or '↓' in final_lose:
                 final_lose = final_lose[:-1]
+            if '↑' in final_deuce or '↓' in final_deuce:
+                final_deuce = final_deuce[:-1]
+            ods['league_win'] = win
+            ods['league_deuce'] = deuce
+            ods['league_lose'] = lose
             ods['league_final_win'] = final_win
-            ods['league_final_deuce'] = t.xpath('td[3]/table/tbody/tr[2]/td[2]/text()').extract_first()
+            ods['league_final_deuce'] = final_deuce
             ods['league_final_lose'] = final_lose
             yield ods

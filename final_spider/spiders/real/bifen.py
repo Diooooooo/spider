@@ -30,13 +30,9 @@ class BifenSpider(scrapy.Spider):
                 t1 = str.split(t1, '/')
                 t1 = t1[len(t1) - 1].split('.')[0]
                 is_home = 1
-            # t2 = td[1].xpath('text()').extract_first()
-            # t2 = td[1].xpath('text()').extract_first()
-            # t2 = td[1].xpath('text()').extract_first()
             t3 = td[2].xpath('text()').extract_first()
             if t3:
                 t3 = t3[:-1]
-            # t4 = td[3].xpath('text()').extract_first()
             t5 = td[4].xpath('img/@src').extract_first()
             if t5:
                 t5 = str.split(t5, '/')

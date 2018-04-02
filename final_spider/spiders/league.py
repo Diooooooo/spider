@@ -29,3 +29,12 @@ class LeagueSpider(scrapy.Spider):
                 league['fid'] = str.split(li.xpath('a/@href').extract_first(), '-')[1][:-1]
                 league['country'] = '0'
                 yield league
+
+        for t in response.xpath('//table[@class="lrace_bei"]/tr'):
+            for d in t.xpath('td'):
+                league = LeagueItem()
+                league['league'] = str.strip(d.xpath('a/text()').extract_first())
+                league['full_name'] = str.strip(d.xpath('a/text()').extract_first())
+                league['fid'] = str.split(d.xpath('a/@href').extract_first(), '-')[1][:-1]
+                league['country'] = '0'
+                yield league

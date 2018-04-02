@@ -154,27 +154,26 @@ class FinalSpiderPipeline(object):
         tx.execute(insertInto)
 
     def _conditional_insert(self, tx, item):
-        type_name = item['type_name']
         insertInto = "INSERT INTO qsr_team_season (lea_id, season_start_play_time, season_team_a, season_team_b, " \
                      "season_gameweek, season_fs_a, season_fs_b, season_year, season_home_team_id, status_id, " \
-                     "type_id, sub_type_id, season_fid) SELECT l.lea_id, i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
+                     "type_id, sub_type_id, season_fid) SELECT IFNULL(l.lea_id, qsr_team_season.lea_id), i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
                      "i.fs_a, i.fs_b, i.year_, ta.team_id, i.status_name, IFNULL(t.type_id, -1), IFNULL(st.sub_type_id, -1), i.season_fid FROM " \
                      "(SELECT \"" + item['league_name'] + "\" AS leaName, \"" + item[
                          'start_time'] + "\" AS play_time, \"" + item['team_a'] + "\" AS team_a, ""\"" + item[
                          'team_b'] + "\" AS team_b, \"" + item['game_week'] + "\" AS gameweek, \"" + str(item[
                          'score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b, \"" + item[
                          'start_time'] + "\" AS year_, \"" + str(item['status']) + "\" AS status_name, \"" + \
-                         type_name + "\" AS type_name, \"" + item['sub_type_name'] + "\" AS sub_type_name, \"" + item[
+                         item['type_name'] + "\" AS type_name, \"" + item['sub_type_name'] + "\" AS sub_type_name, \"" + item[
                          'fid'] + "\" AS season_fid) i " \
                                   "INNER JOIN qsr_team ta ON ta.team_name = i.team_a " \
                                   "INNER JOIN qsr_team tb ON tb.team_name = i.team_b " \
                                   "LEFT JOIN qsr_team_season_type t ON t.type_name = i.type_name " \
                                   "LEFT JOIN qsr_team_season_sub_type st ON st.sub_type_name = i.sub_type_name " \
                                   "LEFT JOIN qsr_league l ON l.lea_name = i.leaName " \
-                                  "ON DUPLICATE KEY UPDATE lea_id = l.lea_id, season_start_play_time = i.play_time, " \
-                                  "season_team_a=ta.team_id, season_team_b = tb.team_id, season_gameweek = i.gameweek, " \
-                                  "season_fs_a = i.fs_a, season_fs_b = i.fs_b, season_year = i.year_, " \
-                                  "season_home_team_id = ta.team_id, status_id = i.status_name"
+                                  "ON DUPLICATE KEY UPDATE lea_id = IFNULL(l.lea_id, qsr_team_season.lea_id), season_start_play_time = IFNULL(i.play_time, season_start_play_time), " \
+                                  "season_team_a=IFNULL(ta.team_id, season_team_a), season_team_b = IFNULL(tb.team_id, season_team_b), season_gameweek = IFNULL(i.gameweek, season_gameweek), " \
+                                  "season_fs_a = IFNULL(i.fs_a, season_fs_a), season_fs_b = IFNULL(i.fs_b, season_fs_b), season_year = IFNULL(i.year_, season_year), " \
+                                  "season_home_team_id = IFNULL(ta.team_id, season_home_team_id), status_id = IFNULL(i.status_name, status_id)"
         tx.execute(insertInto)
 
     def _conditional_score(self, tx, item):
@@ -271,7 +270,8 @@ class FinalSpiderPipeline(object):
                        "INNER JOIN qsr_team_season_technique_type t ON i.type_name = t.type_name " \
                        "INNER JOIN qsr_team_season s ON s.season_fid = i.fid " \
                        "INNER JOIN qsr_team a ON a.team_name = i.team_a " \
-                       "INNER JOIN qsr_team b ON b.team_name = i.team_b"
+                       "INNER JOIN qsr_team b ON b.team_name = i.team_b " \
+                       "ON DUPLICATE KEY UPDATE score_a = IFNULL(i.score_a, qsr_team_season_technique.score_a), score_b = IFNULL(i.score_b, qsr_team_season_technique.score_b)"
         tx.execute(insertInto)
 
     def _conditional_zhenx(self, tx, item):

@@ -63,6 +63,7 @@ ROBOTSTXT_OBEY = False
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'final_spider.middlewares.FinalSpiderSpiderMiddleware': 1,
+   # 'final_spider.middlewares.JsPageMiddleware': 2,
    # 'final_spider.middlewares.ProxyMiddleware': 100,
 }
 

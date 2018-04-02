@@ -9,8 +9,9 @@ from random import choice
 
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
+from scrapy.http import HtmlResponse
 
-from final_spider.settings import PROXIES
+from final_spider.settings import PROXIES, USER_AGENT_CHOICES
 
 
 class FinalSpiderSpiderMiddleware(object):
@@ -27,7 +28,7 @@ class FinalSpiderSpiderMiddleware(object):
         # s = cls()
         # crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         # return s
-        user_agents = crawler.settings.get('USER_AGENT_CHOICES', [])
+        user_agents = choice(USER_AGENT_CHOICES)
 
         if not user_agents:
             raise NotConfigured("USER_AGENT_CHOICES not set or empty")
@@ -89,3 +90,9 @@ class ProxyMiddleware(object):
         else:
             print("**************ProxyMiddleware no pass************" + proxy['ip_port'])
             request.meta['proxy'] = "http://%s" % proxy['ip_port']
+
+class JsPageMiddleware(object):
+    def process_request(self, request, spider):
+        if spider.name == 'score_real':
+            print('request:{0}'.format(request.url))
+            return HtmlResponse(request.url)

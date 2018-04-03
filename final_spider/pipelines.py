@@ -156,7 +156,7 @@ class FinalSpiderPipeline(object):
     def _conditional_insert(self, tx, item):
         insertInto = "INSERT INTO qsr_team_season (lea_id, season_start_play_time, season_team_a, season_team_b, " \
                      "season_gameweek, season_fs_a, season_fs_b, season_year, season_home_team_id, status_id, " \
-                     "type_id, sub_type_id, season_fid) SELECT IFNULL(l.lea_id, qsr_team_season.lea_id), i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
+                     "type_id, sub_type_id, season_fid) SELECT IFNULL(l.lea_id, lea_id), i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
                      "i.fs_a, i.fs_b, i.year_, ta.team_id, i.status_name, IFNULL(t.type_id, -1), IFNULL(st.sub_type_id, -1), i.season_fid FROM " \
                      "(SELECT \"" + item['league_name'] + "\" AS leaName, \"" + item[
                          'start_time'] + "\" AS play_time, \"" + item['team_a'] + "\" AS team_a, ""\"" + item[

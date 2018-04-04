@@ -10,13 +10,13 @@ from final_spider.items import OddsItem
 class OuzhiSpider(scrapy.Spider):
     name = 'daxiao_real'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getOddsSeason?manager=12345qwert']
+    start_urls = ['http://liangqiujiang.com:8080/api/internal/getFutureSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
         for j in jsonInfo['datalist']:
             yield Request('http://odds.500.com/fenxi/daxiao-%s.shtml' % j['season_fid'],
-                          self.parse_season_history_ouzhi)
+                          self.parse_season_history_ouzhi, dont_filter=True)
 
     def parse_season_history_ouzhi(self, response):
         odds = ['威廉希尔', '澳门', '立博', 'Bet365', 'SNAI', '皇冠', '易胜博', '伟德', 'Bwin', 'Pinncale平博',

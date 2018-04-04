@@ -15,7 +15,7 @@ class JishuSpider(scrapy.Spider):
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
         for j in jsonInfo['datalist']:
-            yield Request('http://live.500.com/detail.php?fid=%s' % j['season_fid'], self.parse_team)
+            yield Request('http://live.500.com/detail.php?fid=%s' % j['season_fid'], self.parse_team, dont_filter=True)
 
     def parse_team(self, response):
         names = ['射正', '射门', '进攻']

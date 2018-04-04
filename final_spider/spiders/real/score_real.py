@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+from urllib.parse import unquote
 
 import scrapy
 from scrapy import Request
@@ -15,48 +17,69 @@ class ScoreSpider(scrapy.Spider):
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
             for li in t.xpath('li'):
                 for d in li.xpath('div/a'):
-                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info)
+                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info, dont_filter=True)
 
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
             for li in t.xpath('li'):
-                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info)
-
-    # def parse_info(self, response):
-    #     for t in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
-    #         yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)
+                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
 
     def parse_item_info(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
-                      self.parse_detail_info)
+                      self.parse_item_url_info, dont_filter=True)
 
     def parse_item_url_info(self, response):
         types = ['总榜单', '主场', '客场', '上半场', '下半场']
+        leagueName = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
+        year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
+        if '/' in year:
+            year = year.split('/')[1] + '-00-00'
+        else:
+            year = year + '-00-00'
         for u in response.xpath('//div[@id="match_hot_div"]/a'):
-            if u in types:
-                pass
+            if u.xpath('text()').extract_first() in types:
+                tid = response.url.split('-')[-1]
+                if '/' in tid:
+                    tid = tid[:len(tid) - 1]
+                yield Request(
+                    response.urljoin('/index.php?c=score&a=getHotScore&stid=%s&type=%s&leagueName=%s&year=%s'%
+                                     (tid, u.xpath('@data-type').extract_first(), leagueName, year)),
+                    self.parse_detail_info, dont_filter=True)
 
     def parse_detail_info(self, response):
-        for r in response.xpath('//tbody[@id="hot_score_tbody"]/tr'):
-            score = ScoreItem()
-            score['type_name'] = response.xpath('//div[@class="lcol_hd lcol_hd_nobd"]/h3/text()').extract()[1]
-            score['league_name'] = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
-            year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
-            if '/' in year:
-                score['league_year'] = year.split('/')[1] + '-00-00'
+        typeName = response.url.split('=')[-3].split('&')[0]
+        if 'all' == typeName:
+            typeName = '积分榜'
+        elif 'half' == typeName:
+            typeName = '上半场'
+        elif 'second_half' == typeName:
+            typeName = '下半场'
+        elif 'home' == typeName:
+            typeName = '主场'
+        elif 'away' == typeName:
+            typeName = '客场'
+        jsonInfo = json.loads(response.body.decode())
+        score = ScoreItem()
+        score['type_name'] = unquote(typeName)
+        score['league_name'] = unquote(response.url.split('=')[-2].split('&')[0])
+        score['league_year'] = response.url.split('=')[-1]
+        for j in jsonInfo:
+            score['team_name'] = str(j['teamname'])
+            score['season_count'] = str(j['total'])
+            score['season_vicotry'] = str(j['win'])
+            score['season_deuce'] = str(j['draw'])
+            score['season_lose'] = str(j['lost'])
+            score['season_in'] = str(j['jq'])
+            score['season_out'] = str(j['sq'])
+            score['season_win'] = str(j['js'])
+            score['avg_vicotry'] = str(j['ain'])
+            score['avg_lose'] = str(j['aln'])
+            if 0 == j['total']:
+                score['probability_vicotry'] = ''
+                score['probability_deuce'] = ''
+                score['probability_lose'] = ''
             else:
-                score['league_year'] = year + '-00-00'
-            score['team_name'] = r.xpath('td[@class="td_qiud"]/span/a/@title').extract_first()
-            score['season_count'] = r.xpath('td[4]/text()').extract_first()
-            score['season_vicotry'] = r.xpath('td[5]/text()').extract_first()
-            score['season_deuce'] = r.xpath('td[6]/text()').extract_first()
-            score['season_lose'] = r.xpath('td[7]/text()').extract_first()
-            score['season_in'] = r.xpath('td[8]/text()').extract_first()
-            score['season_out'] = r.xpath('td[9]/text()').extract_first()
-            score['season_win'] = r.xpath('td[10]/text()').extract_first()
-            score['avg_vicotry'] = r.xpath('td[11]/text()').extract_first()
-            score['avg_lose'] = r.xpath('td[12]/text()').extract_first()
-            score['probability_vicotry'] = r.xpath('td[@class="td_shengl"]/span/text()').extract_first()
-            score['probability_deuce'] = r.xpath('td[@class="td_pingl"]/span/text()').extract_first()
-            score['probability_lose'] = r.xpath('td[@class="td_ful"]/span/text()').extract_first()
-            score['season_source'] = r.xpath('td[@class="td_jif"]/text()').extract_first()
+                score['probability_vicotry'] = str(j['win']*100/j['total'])[:5] + '%'
+                score['probability_deuce'] = str(j['draw']*100/j['total'])[:5] + '%'
+                score['probability_lose'] = str(j['lost']*100/j['total'])[:5] + '%'
+            score['season_source'] = str(j['score'])
             yield score

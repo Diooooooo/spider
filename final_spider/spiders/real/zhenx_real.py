@@ -15,7 +15,7 @@ class ZhenxSpider(scrapy.Spider):
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
         for j in jsonInfo['datalist']:
-            yield Request('http://odds.500.com/fenxi/stat-%s.shtml' % j['season_fid'], self.parse_team)
+            yield Request('http://odds.500.com/fenxi/stat-%s.shtml' % j['season_fid'], self.parse_team, dont_filter=True)
 
     def parse_team(self, response):
         if response.xpath('//div[@class="zhenxing-t clearfix"]/p[@class="l"]'):

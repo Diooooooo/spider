@@ -15,7 +15,7 @@ class BifenSpider(scrapy.Spider):
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
         for j in jsonInfo['datalist']:
-            yield Request('http://live.500.com/detail.php?fid=%s' % j['season_fid'], self.parse_detail)
+            yield Request('http://live.500.com/detail.php?fid=%s' % j['season_fid'], self.parse_detail, dont_filter=True)
 
     def parse_detail(self, response):
         season_fids = response.url.split('=')

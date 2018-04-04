@@ -198,7 +198,12 @@ class FinalSpiderPipeline(object):
                      + item['probability_lose'] + "\" AS p_l, \"" + item['season_source'] + "\" AS team_source) i " \
                         "INNER JOIN qsr_league l ON l.lea_name = i.league_name " \
                         "INNER JOIN qsr_team t ON t.team_name = i.team_name " \
-                        "INNER JOIN qsr_team_season_ranking_list_type lt ON lt.type_name = i.type_name"
+                        "INNER JOIN qsr_team_season_ranking_list_type lt ON lt.type_name = i.type_name " \
+                        "ON DUPLICATE KEY UPDATE item_count = i.team_count, item_vicotry = i.vicotry, " \
+                        "item_deuce = i.deuce, item_lose = i.lose, item_in = i.team_in, item_out = i.team_out, " \
+                        "item_win = i.win, item_avg_vicotry = i.avg_vicotry, item_avg_lose = i.avg_lose, " \
+                        "item_probability_vicotry = i.p_v, item_probability_deuce = i.p_d, " \
+                        "item_probability_lose = i.p_l, item_source = i.team_source "
         modify_league = "UPDATE qsr_league e SET e.is_score = 1 WHERE e.lea_name = \""+item['league_name'] + "\""
         tx.execute(insertInto)
         tx.execute(modify_league)
@@ -377,6 +382,9 @@ class FinalSpiderPipeline(object):
 
 
     def _handle_error(self, failue, item, spider):
+        print('error')
+        print(item)
+        print(spider)
         print('-------------------' + str(failue) + '---------------------------')
 
 

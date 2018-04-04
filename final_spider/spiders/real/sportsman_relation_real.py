@@ -18,11 +18,11 @@ class SportsmanRelationSpider(scrapy.Spider):
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
             for li in t.xpath('li'):
                 for d in li.xpath('div/a'):
-                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info)
+                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info, dont_filter=True)
 
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
             for li in t.xpath('li'):
-                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info)
+                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
 
     # def parse_info(self, response):
     #     for t in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
@@ -30,7 +30,7 @@ class SportsmanRelationSpider(scrapy.Spider):
 
     def parse_item_info(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
-                      self.parse_detail_info)
+                      self.parse_detail_info, dont_filter=True)
 
     def parse_detail_info(self, response):
         # 遍历选项卡（联赛赛程，联赛赛制）
@@ -42,7 +42,7 @@ class SportsmanRelationSpider(scrapy.Spider):
         for r in response.xpath('//div[@class="ltab_hd lmb3 clearfix"]/a'):
             if r.xpath('@href').extract_first() != 'javascript:void(0);':
                 yield Request(response.urljoin(r.xpath('@href').extract_first()),
-                              self.parse_season_history_tab)
+                              self.parse_season_history_tab, dont_filter=True)
 
     def parse_season_history(self, response):
         if response.xpath('//ul[@id="match_group"]'):
@@ -54,9 +54,9 @@ class SportsmanRelationSpider(scrapy.Spider):
                     str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url)).read(), "html.parser")))
                 for t in infoJson:
                     yield Request(response.urljoin('http://liansai.500.com/team/%s/teamlineup/' % t['hid']),
-                                  self.parse_sportsman_iteration)
+                                  self.parse_sportsman_iteration, dont_filter=True)
                     yield Request(response.urljoin('http://liansai.500.com/team/%s/teamlineup/' % t['gid']),
-                                  self.parse_sportsman_iteration)
+                                  self.parse_sportsman_iteration, dont_filter=True)
         elif response.xpath('//div[@id="season_match_list"]'):
             for s in response.xpath('//tbody[@id="match_list_tbody"]/tr'):
                 yield Request(response.urljoin(
@@ -69,37 +69,37 @@ class SportsmanRelationSpider(scrapy.Spider):
             for s in response.xpath('//div[@class="lmb3"]'):
                 for t in s.xpath('table/tbody/tr'):
                     yield Request(response.urljoin('http://liansai.500.com%steamlineup/' % t.xpath(
-                        'td[@class="td_lteam"]/a/@href').extract_first()), self.parse_sportsman_iteration)
+                        'td[@class="td_lteam"]/a/@href').extract_first()), self.parse_sportsman_iteration, dont_filter=True)
                     yield Request(response.urljoin('http://liansai.500.com%steamlineup/' % t.xpath(
-                        'td[@class="td_rteam"]/a/@href').extract_first()), self.parse_sportsman_iteration)
+                        'td[@class="td_rteam"]/a/@href').extract_first()), self.parse_sportsman_iteration, dont_filter=True)
 
     def parse_season_history_tab(self, response):
         # 遍历赛程 非JSON格式
         for t in response.xpath('//tbody[@id="match_list_tbody"]/tr'):
             yield Request(response.urljoin(
                 'http://liansai.500.com%steamlineup/' % t.xpath('td[@class="td_lteam"]/a/@href').extract_first()),
-                          self.parse_sportsman_iteration)
+                          self.parse_sportsman_iteration, dont_filter=True)
             yield Request(response.urljoin(
                 'http://liansai.500.com%steamlineup/' % t.xpath('td[@class="td_rteam"]/a/@href').extract_first()),
-                          self.parse_sportsman_iteration)
+                          self.parse_sportsman_iteration, dont_filter=True)
 
     def parse_sportsman_iteration(self, response):
         for qf in response.xpath(
                 '//table[@class=" lqiuy_list lqiuy_list_qf  ltable ltable_auto lmb jTrHover"]/tbody/tr'):
             yield Request(response.urljoin(qf.xpath('td[@class="td_qiuy"]/span/a/@href').extract_first()),
-                          self.parse_sportsman)
+                          self.parse_sportsman, dont_filter=True)
         for zc in response.xpath(
                 '//table[@class=" lqiuy_list lqiuy_list_zc  ltable ltable_auto lmb jTrHover"]/tbody/tr'):
             yield Request(response.urljoin(zc.xpath('td[@class="td_qiuy"]/span/a/@href').extract_first()),
-                          self.parse_sportsman)
+                          self.parse_sportsman, dont_filter=True)
         for hw in response.xpath(
                 '//table[@class=" lqiuy_list lqiuy_list_hw  ltable ltable_auto lmb jTrHover"]/tbody/tr'):
             yield Request(response.urljoin(hw.xpath('td[@class="td_qiuy"]/span/a/@href').extract_first()),
-                          self.parse_sportsman)
+                          self.parse_sportsman, dont_filter=True)
         for smy in response.xpath(
                 '//table[@class=" lqiuy_list lqiuy_list_smy  ltable ltable_auto lmb jTrHover"]/tbody/tr'):
             yield Request(response.urljoin(smy.xpath('td[@class="td_qiuy"]/span/a/@href').extract_first()),
-                          self.parse_sportsman)
+                          self.parse_sportsman, dont_filter=True)
 
     def parse_sportsman(self, response):
         relation = RelationItem()

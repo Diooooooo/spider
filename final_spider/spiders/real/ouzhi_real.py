@@ -15,8 +15,8 @@ class OuzhiSpider(scrapy.Spider):
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
         for j in jsonInfo['datalist']:
-            yield Request('http://odds.500.com/fenxi/ouzhi-%s.shtml' % j['season_fid'], self.parse_season_history_ouzhi, dont_filter=True)
-
+            yield Request('http://odds.500.com/fenxi/ouzhi-%s.shtml' % j['season_fid'], self.parse_season_history_ouzhi,
+                          dont_filter=True)
 
     def parse_season_history_ouzhi(self, response):
         odds = ['澳门', '立博', '伟德', '易胜博', 'Bet365', '竞彩官方', '威廉希尔', '皇冠', 'Interwetten', 'SNAI',

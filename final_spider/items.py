@@ -180,3 +180,6 @@ class NewsItem(scrapy.Item):
     url = scrapy.Field()
     description = scrapy.Field()
     img = scrapy.Field()
+
+class EventItemDel(scrapy.Item):
+    season_fid = scrapy.Field()

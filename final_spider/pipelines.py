@@ -67,6 +67,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_lottery, item)
         elif item.__class__.__name__ == 'NewsItem':
             query = self.dbpool.runInteraction(self._conditional_news, item)
+        elif item.__class__.__name__ == 'EventItemDel':
+            query = self.dbpool.runInteraction(self._conditional_event_del, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -156,7 +158,7 @@ class FinalSpiderPipeline(object):
     def _conditional_insert(self, tx, item):
         insertInto = "INSERT INTO qsr_team_season (lea_id, season_start_play_time, season_team_a, season_team_b, " \
                      "season_gameweek, season_fs_a, season_fs_b, season_year, season_home_team_id, status_id, " \
-                     "type_id, sub_type_id, season_fid) SELECT IFNULL(l.lea_id, lea_id), i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
+                     "type_id, sub_type_id, season_fid) SELECT l.lea_id, i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
                      "i.fs_a, i.fs_b, i.year_, ta.team_id, i.status_name, IFNULL(t.type_id, -1), IFNULL(st.sub_type_id, -1), i.season_fid FROM " \
                      "(SELECT \"" + item['league_name'] + "\" AS leaName, \"" + item[
                          'start_time'] + "\" AS play_time, \"" + item['team_a'] + "\" AS team_a, ""\"" + item[
@@ -169,7 +171,7 @@ class FinalSpiderPipeline(object):
                                   "INNER JOIN qsr_team tb ON tb.team_name = i.team_b " \
                                   "LEFT JOIN qsr_team_season_type t ON t.type_name = i.type_name " \
                                   "LEFT JOIN qsr_team_season_sub_type st ON st.sub_type_name = i.sub_type_name " \
-                                  "LEFT JOIN qsr_league l ON l.lea_name = i.leaName " \
+                                  "LEFT JOIN qsr_league l ON l.lea_full_name = i.leaName " \
                                   "ON DUPLICATE KEY UPDATE lea_id = IFNULL(l.lea_id, qsr_team_season.lea_id), season_start_play_time = IFNULL(i.play_time, season_start_play_time), " \
                                   "season_team_a=IFNULL(ta.team_id, season_team_a), season_team_b = IFNULL(tb.team_id, season_team_b), season_gameweek = IFNULL(i.gameweek, season_gameweek), " \
                                   "season_fs_a = IFNULL(i.fs_a, season_fs_a), season_fs_b = IFNULL(i.fs_b, season_fs_b), season_year = IFNULL(i.year_, season_year), " \
@@ -300,6 +302,12 @@ class FinalSpiderPipeline(object):
                     "ON DUPLICATE KEY UPDATE status_id = i.status_id "
         tx.execute(insertInto)
 
+    def _conditional_event_item(self, tx, item):
+        delSql = "DELETE e.* FROM qsr_team_season_event e " \
+                 "INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
+                 "WHERE s.season_fid =" + item['season_fid']
+        tx.execute(delSql)
+
     def _conditional_event(self, tx, item):
         if 'player-change' == item['type']:
             if '-' in item['content'].split('~')[0]:
@@ -329,9 +337,9 @@ class FinalSpiderPipeline(object):
                         "INNER JOIN qsr_team_season s ON i.season_fid = s.season_fid " \
                         "LEFT JOIN qsr_team_sportsman ts ON ts.sports_fid = i.sp_in " \
                         "LEFT JOIN qsr_team_sportsman ts2 ON ts2.sports_fid = i.sp_out " \
-                        "ON DUPLICATE KEY UPDATE sportsman_id_in = IF(i.is_home = 1, s.season_team_a, s.season_team_b)" \
+                        "ON DUPLICATE KEY UPDATE sportsman_id_in = IFNULL(ts.sports_id, sportsman_id_in)" \
                         ", sportsman_name_in = IFNULL(ts.sports_name, i.sportsman_name_in)," \
-                        "sportsman_id_out = IFNULL(ts2.sports_id, 0), sportsman_name_out = IFNULL(ts2.sports_name, i.sports_name_out)"
+                        "sportsman_id_out = IFNULL(ts2.sports_id, 0), sportsman_name_out = IFNULL(ts2.sports_name, i.sportsman_name_out)"
             tx.execute(insertInto)
         else:
             if '-' in item['content']:
@@ -352,7 +360,7 @@ class FinalSpiderPipeline(object):
                           "INNER JOIN qsr_team_season_event_type t ON i.type_name = t.type_name_en " \
                           "INNER JOIN qsr_team_season s ON i.season_fid = s.season_fid " \
                           "LEFT JOIN qsr_team_sportsman ts ON ts.sports_fid = i.sp_in " \
-                          "ON DUPLICATE KEY UPDATE sportsman_id_in = IF(i.is_home = 1, s.season_team_a, s.season_team_b)" \
+                          "ON DUPLICATE KEY UPDATE sportsman_id_in = IFNULL(ts.sports_id, sportsman_id_in)" \
                           ", sportsman_name_in = IFNULL(ts.sports_name, i.sportsman_name_in)"
             tx.execute(insertIntoIn)
 

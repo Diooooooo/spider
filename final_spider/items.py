@@ -46,6 +46,18 @@ class SeasonItem(scrapy.Item):
     sub_type_name = scrapy.Field()
     fid = scrapy.Field()
 
+class SeasonRealItem(scrapy.Item):
+    game_week = scrapy.Field()
+    start_time = scrapy.Field()
+    team_a = scrapy.Field()
+    team_b = scrapy.Field()
+    score_a = scrapy.Field()
+    score_b = scrapy.Field()
+    status = scrapy.Field()
+    league_name = scrapy.Field()
+    type_name = scrapy.Field()
+    sub_type_name = scrapy.Field()
+    fid = scrapy.Field()
 
 class TeamItem(scrapy.Item):
     team_fid = scrapy.Field()

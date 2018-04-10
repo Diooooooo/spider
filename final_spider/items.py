@@ -183,3 +183,7 @@ class NewsItem(scrapy.Item):
 
 class EventItemDel(scrapy.Item):
     season_fid = scrapy.Field()
+
+class PlanRelationItemDel(scrapy.Item):
+    season_fid = scrapy.Field()
+    type = scrapy.Field()

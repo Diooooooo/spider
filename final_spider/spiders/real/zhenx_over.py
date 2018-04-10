@@ -8,9 +8,9 @@ from final_spider.items import PlanItem, PlanRelationItem, PlanRelationItemDel
 
 
 class ZhenxSpider(scrapy.Spider):
-    name = 'zhenx_real'
+    name = 'zhenx_over'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getPlanSeason?manager=12345qwert']
+    start_urls = ['http://liangqiujiang.com:8080/api/internal/getPlayingSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
@@ -54,7 +54,7 @@ class ZhenxSpider(scrapy.Spider):
             if '暂无' not in p['plan']:
                 yield p
                 d = PlanRelationItemDel()
-                dele['type'] = 'right'
+                d['type'] = 'right'
                 d['season_fid'] = str(response.url).split('-')[1].split('.')[0]
                 yield d
                 for r in response.xpath('//div[@class="statis-r "]/table/tbody/tr')[1:]:

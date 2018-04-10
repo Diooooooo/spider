@@ -69,6 +69,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_news, item)
         elif item.__class__.__name__ == 'EventItemDel':
             query = self.dbpool.runInteraction(self._conditional_event_del, item)
+        elif item.__class__.__name__ == 'PlanRelationItemDel':
+            query = self.dbpool.runInteraction(self._conditional_event_plan_del, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -291,7 +293,7 @@ class FinalSpiderPipeline(object):
 
     def _conditional_zhenx_relation(self, tx, item):
         insertInto = "INSERT INTO qsr_team_season_plan_item ( plan_id ,sportsman_id ,team_id, status_id ) " \
-                     "SELECT p.plan_id, i.si_fid, p.team_id, i.status_id " \
+                     "SELECT p.plan_id, m.sports_id, p.team_id, i.status_id " \
                      "FROM (SELECT \"" + item['season_fid'] + "\" AS fid, \"" \
                      + item['sports_fid'] + "\" AS si_fid, \"" + item['type'] + "\" AS type_, \"" \
                      + item['status_id'] + "\" AS status_id) i " \
@@ -302,11 +304,24 @@ class FinalSpiderPipeline(object):
                     "ON DUPLICATE KEY UPDATE status_id = i.status_id "
         tx.execute(insertInto)
 
-    def _conditional_event_item(self, tx, item):
+    def _conditional_event_del(self, tx, item):
         delSql = "DELETE e.* FROM qsr_team_season_event e " \
                  "INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
                  "WHERE s.season_fid =" + item['season_fid']
         tx.execute(delSql)
+
+    def _conditional_event_plan_del(self, tx, item):
+        if 'left' == item['type']:
+            d = "DELETE i.* FROM qsr_team_season_plan_item i " \
+                "INNER JOIN qsr_team_season_plan p ON p.plan_id = i.plan_id " \
+                "INNER JOIN qsr_team_season s ON p.season_id = s.season_id AND i.team_id = s.season_team_a " \
+                "WHERE s.season_fid = " + item['season_fid']
+        else:
+            d = "DELETE i.* from qsr_team_season_plan_item i " \
+                "INNER JOIN qsr_team_season_plan p ON p.plan_id = i.plan_id " \
+                "INNER JOIN qsr_team_season s ON p.season_id = s.season_id AND i.team_id = s.season_team_b " \
+                "WHERE s.season_fid = " + item['season_fid']
+        tx.execute(d)
 
     def _conditional_event(self, tx, item):
         if 'player-change' == item['type']:

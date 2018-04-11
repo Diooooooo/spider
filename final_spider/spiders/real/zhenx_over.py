@@ -4,7 +4,7 @@ import json
 import scrapy
 from scrapy import Request
 
-from final_spider.items import PlanItem, PlanRelationItem, PlanRelationItemDel
+from final_spider.items import PlanItem, PlanRelationItem
 
 
 class ZhenxSpider(scrapy.Spider):
@@ -32,10 +32,6 @@ class ZhenxSpider(scrapy.Spider):
 
             if '暂无' not in plan['plan']:
                 yield plan
-                dele = PlanRelationItemDel()
-                dele['type'] = 'left'
-                dele['season_fid'] = str(response.url).split('-')[1].split('.')[0]
-                yield dele
                 for l in response.xpath('//div[@class="statis-l "]/table/tbody/tr')[1:]:
                     if l.xpath('td[3]/a').extract_first():
                         sp = l.xpath('td[3]/a/@href').extract_first()
@@ -53,10 +49,6 @@ class ZhenxSpider(scrapy.Spider):
 
             if '暂无' not in p['plan']:
                 yield p
-                d = PlanRelationItemDel()
-                d['type'] = 'right'
-                d['season_fid'] = str(response.url).split('-')[1].split('.')[0]
-                yield d
                 for r in response.xpath('//div[@class="statis-r "]/table/tbody/tr')[1:]:
                     if r.xpath('td[3]/a').extract_first():
                         sp = r.xpath('td[3]/a/@href').extract_first()

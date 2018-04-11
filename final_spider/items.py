@@ -46,6 +46,7 @@ class SeasonItem(scrapy.Item):
     sub_type_name = scrapy.Field()
     fid = scrapy.Field()
 
+
 class SeasonRealItem(scrapy.Item):
     game_week = scrapy.Field()
     start_time = scrapy.Field()
@@ -58,6 +59,7 @@ class SeasonRealItem(scrapy.Item):
     type_name = scrapy.Field()
     sub_type_name = scrapy.Field()
     fid = scrapy.Field()
+
 
 class TeamItem(scrapy.Item):
     team_fid = scrapy.Field()
@@ -183,6 +185,7 @@ class LotteryItem(scrapy.Item):
     full = scrapy.Field()
     type_id = scrapy.Field()
 
+
 class NewsItem(scrapy.Item):
     title = scrapy.Field()
     time = scrapy.Field()
@@ -192,10 +195,3 @@ class NewsItem(scrapy.Item):
     url = scrapy.Field()
     description = scrapy.Field()
     img = scrapy.Field()
-
-class EventItemDel(scrapy.Item):
-    season_fid = scrapy.Field()
-
-class PlanRelationItemDel(scrapy.Item):
-    season_fid = scrapy.Field()
-    type = scrapy.Field()

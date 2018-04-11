@@ -4,7 +4,7 @@ import json
 import scrapy
 from scrapy import Request
 
-from final_spider.items import EventItem, EventItemDel
+from final_spider.items import EventItem
 
 
 class BifenSpider(scrapy.Spider):
@@ -20,9 +20,6 @@ class BifenSpider(scrapy.Spider):
 
     def parse_detail(self, response):
         season_fids = response.url.split('=')
-        dele = EventItemDel()
-        dele['season_fid'] = season_fids[len(season_fids) - 1]
-        yield dele
         for r in response.xpath('//table[@class="mtable"]/tr')[1:]:
             td = r.xpath('td')
             t1 = td[0].xpath('img/@src').extract_first()

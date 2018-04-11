@@ -38,4 +38,5 @@ class JishuSpider(scrapy.Spider):
             jishu['league_jishu_team_b_fs'] = k.xpath('td[4]/text()').extract_first()
             jishu['league_jishu_team_a'] = team_a
             jishu['league_jishu_team_b'] = team_b
-            yield jishu
+            if k.xpath('td[2]/text()').extract_first() != 0 or k.xpath('td[4]/text()').extract_first() != 0:
+                yield jishu

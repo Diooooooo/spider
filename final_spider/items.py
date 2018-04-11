@@ -173,6 +173,14 @@ class EventItem(scrapy.Item):
     content = scrapy.Field()
 
 
+class EventRealItem(scrapy.Item):
+    season_fid = scrapy.Field()
+    is_home = scrapy.Field()
+    time = scrapy.Field()
+    type = scrapy.Field()
+    content = scrapy.Field()
+
+
 class LotteryItem(scrapy.Item):
     issue = scrapy.Field()
     mid = scrapy.Field()

@@ -57,6 +57,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_jishu, item)
         elif item.__class__.__name__ == 'EventItem':
             query = self.dbpool.runInteraction(self._conditional_event, item)
+        elif item.__class__.__name__ == 'EventRealItem':
+            query = self.dbpool.runInteraction(self._conditional_event_real, item)
         elif item.__class__.__name__ == 'CountryItem':
             query = self.dbpool.runInteraction(self._conditional_country, item)
         elif item.__class__.__name__ == 'LeagueItem':
@@ -332,6 +334,12 @@ class FinalSpiderPipeline(object):
                                            "ON DUPLICATE KEY UPDATE status_id = i.status_id, enabled = IF(" \
                                            "qsr_team_season_plan_item.item_id, 1, 0) "
         tx.execute(insertInto)
+
+
+    def _conditional_event_real(self, tx, item):
+        real = "UPDATE qsr_team_season_event e INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
+               "SET e.enabled = 0 WHERE s.season_fid = " + item['season_fid']
+        tx.execute(real)
 
 
     def _conditional_event(self, tx, item):

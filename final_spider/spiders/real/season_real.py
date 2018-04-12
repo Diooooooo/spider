@@ -22,10 +22,10 @@ class SeasonTypeDemoSpider(scrapy.Spider):
         if tds:
             source = tds[2].xpath('span/text()').extract_first()
             season = SeasonRealItem()
-            season['league_name'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[:1][0]
-            season['type_name'] = ''
-            season['sub_type_name'] = ''
-            season['game_week'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[1:][0][:-1]
+            # season['league_name'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[:1][0]
+            # season['type_name'] = ''
+            # season['sub_type_name'] = ''
+            # season['game_week'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[1:][0][:-1]
             season['start_time'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[:1][0] + ' ' + response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[1:2][0]
             season['team_a'] = tds[0].xpath('h2/a/text()').extract_first()
             season['team_b'] = tds[4].xpath('h2/a/text()').extract_first()

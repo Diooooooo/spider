@@ -57,8 +57,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_jishu, item)
         elif item.__class__.__name__ == 'EventItem':
             query = self.dbpool.runInteraction(self._conditional_event, item)
-        elif item.__class__.__name__ == 'EventRealItem':
-            query = self.dbpool.runInteraction(self._conditional_event_real, item)
+        # elif item.__class__.__name__ == 'EventRealItem':
+        #     query = self.dbpool.runInteraction(self._conditional_event_real, item)
         elif item.__class__.__name__ == 'CountryItem':
             query = self.dbpool.runInteraction(self._conditional_country, item)
         elif item.__class__.__name__ == 'LeagueItem':
@@ -186,28 +186,15 @@ class FinalSpiderPipeline(object):
         tx.execute(insertInto)
 
     def _conditional_insert_real(self, tx, item):
-        insertInto = "INSERT INTO qsr_team_season (lea_id, season_start_play_time, season_team_a, season_team_b, " \
-                     "season_gameweek, season_fs_a, season_fs_b, season_year, season_home_team_id, status_id, " \
-                     "type_id, sub_type_id, season_fid) SELECT l.lea_id, i.play_time, ta.team_id, tb.team_id, i.gameweek, " \
-                     "i.fs_a, i.fs_b, i.year_, ta.team_id, i.status_name, IFNULL(t.type_id, -1), IFNULL(st.sub_type_id, -1), i.season_fid FROM " \
-                     "(SELECT \"" + item['league_name'] + "\" AS leaName, \"" + item[
-                         'start_time'] + "\" AS play_time, \"" + item['team_a'] + "\" AS team_a, ""\"" + item[
-                         'team_b'] + "\" AS team_b, \"" + item['game_week'] + "\" AS gameweek, \"" + str(item[
-                                                                                                             'score_a']) + "\" AS fs_a, \"" + str(
-            item['score_b']) + "\" AS fs_b, \"" + item[
-                         'start_time'] + "\" AS year_, \"" + str(item['status']) + "\" AS status_name, \"" + \
-                     item['type_name'] + "\" AS type_name, \"" + item['sub_type_name'] + "\" AS sub_type_name, \"" + \
-                     item[
-                         'fid'] + "\" AS season_fid) i " \
-                                  "INNER JOIN qsr_team ta ON ta.team_name = i.team_a " \
-                                  "INNER JOIN qsr_team tb ON tb.team_name = i.team_b " \
-                                  "LEFT JOIN qsr_team_season_type t ON t.type_name = i.type_name " \
-                                  "LEFT JOIN qsr_team_season_sub_type st ON st.sub_type_name = i.sub_type_name " \
-                                  "LEFT JOIN qsr_league l ON l.lea_full_name = i.leaName " \
-                                  "ON DUPLICATE KEY UPDATE lea_id = IFNULL(l.lea_id, qsr_team_season.lea_id), season_start_play_time = IFNULL(i.play_time, season_start_play_time), " \
-                                  "season_team_a=IFNULL(ta.team_id, season_team_a), season_team_b = IFNULL(tb.team_id, season_team_b), season_gameweek = IFNULL(i.gameweek, season_gameweek), " \
-                                  "season_fs_a = IFNULL(i.fs_a, season_fs_a), season_fs_b = IFNULL(i.fs_b, season_fs_b), season_year = IFNULL(i.year_, season_year), " \
-                                  "season_home_team_id = IFNULL(ta.team_id, season_home_team_id), status_id = IFNULL(i.status_name, status_id)"
+        insertInto = "UPDATE qsr_team_season s " \
+                     "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
+                     + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, " \
+                     "\"" + item['status'] + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
+                     + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b) i " \
+                     "ON s.season_fid = i.season_fid " \
+                     "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
+                     "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
+                     "SET s.status_id = i.status_name, s.season_fs_a = i.fs_a, s.season_fs_b = i.fs_b "
         tx.execute(insertInto)
 
     def _conditional_score(self, tx, item):
@@ -336,10 +323,10 @@ class FinalSpiderPipeline(object):
         tx.execute(insertInto)
 
 
-    def _conditional_event_real(self, tx, item):
-        real = "UPDATE qsr_team_season_event e INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
-               "SET e.enabled = 0 WHERE s.season_fid = " + item['season_fid']
-        tx.execute(real)
+    # def _conditional_event_real(self, tx, item):
+    #     real = "UPDATE qsr_team_season_event e INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
+    #            "SET e.enabled = 0 WHERE s.season_fid = " + item['season_fid']
+    #     tx.execute(real)
 
 
     def _conditional_event(self, tx, item):
@@ -356,7 +343,7 @@ class FinalSpiderPipeline(object):
             else:
                 sp_out = '0'
                 name_out = item['content'].split('~')[1]
-            insertInto = "INSERT INTO qsr_team_season_event(season_id, team_id, sportsman_id_in, start_time, type_id, " \
+            insertInto = "INSERT INTO qsr_team_season_event_temp(season_id, team_id, sportsman_id_in, start_time, type_id, " \
                          "sportsman_name_in, sportsman_id_out, sportsman_name_out, enabled) " \
                          "SELECT s.season_id, IF(i.is_home = 1, s.season_team_a, s.season_team_b), " \
                          "IFNULL(ts.sports_id, 0), i.start_time, t.type_id, " \
@@ -385,7 +372,7 @@ class FinalSpiderPipeline(object):
             else:
                 sp_in = '0'
                 name = item['content']
-            insertIntoIn = "INSERT INTO qsr_team_season_event(season_id, team_id, sportsman_id_in, start_time, " \
+            insertIntoIn = "INSERT INTO qsr_team_season_event_temp(season_id, team_id, sportsman_id_in, start_time, " \
                            "type_id, sportsman_name_in, enabled) " \
                            "SELECT s.season_id, IF(i.is_home = 1, s.season_team_a, s.season_team_b), " \
                            "IFNULL(ts.sports_id, 0), i.start_time, t.type_id, " \

@@ -4,7 +4,7 @@ import json
 import scrapy
 from scrapy import Request
 
-from final_spider.items import SeasonItem
+from final_spider.items import SeasonItem, SeasonRealItem
 
 
 class SeasonTypeDemoSpider(scrapy.Spider):
@@ -21,11 +21,11 @@ class SeasonTypeDemoSpider(scrapy.Spider):
         tds = response.xpath('//div[@class="t1"]/table/tr/td')
         if tds:
             source = tds[2].xpath('span/text()').extract_first()
-            season = SeasonItem()
-            season['league_name'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[:1][0]
-            season['type_name'] = ''
-            season['sub_type_name'] = ''
-            season['game_week'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[1:][0][:-1]
+            season = SeasonRealItem()
+            # season['league_name'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[:1][0]
+            # season['type_name'] = ''
+            # season['sub_type_name'] = ''
+            # season['game_week'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[1:][0][:-1]
             season['start_time'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[:1][0] + ' ' + response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[1:2][0]
             season['team_a'] = tds[0].xpath('h2/a/text()').extract_first()
             season['team_b'] = tds[4].xpath('h2/a/text()').extract_first()

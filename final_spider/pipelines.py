@@ -189,7 +189,7 @@ class FinalSpiderPipeline(object):
         insertInto = "UPDATE qsr_team_season s " \
                      "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
                      + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, " \
-                     "\"" + item['status'] + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
+                     "\"" + str(item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
                      + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b) i " \
                      "ON s.season_fid = i.season_fid " \
                      "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
@@ -363,7 +363,7 @@ class FinalSpiderPipeline(object):
                                            ", sportsman_name_in = IFNULL(ts.sports_name, i.sportsman_name_in)," \
                                            "sportsman_id_out = IFNULL(ts2.sports_id, 0), " \
                                            "sportsman_name_out = IFNULL(ts2.sports_name, i.sportsman_name_out), " \
-                                           "enabled = IF(qsr_team_season_event.event_id, 1, 0) "
+                                           "enabled = IF(qsr_team_season_event_temp.event_id, 1, 0) "
             tx.execute(insertInto)
         else:
             if '-' in item['content']:
@@ -387,7 +387,7 @@ class FinalSpiderPipeline(object):
                                          "ON DUPLICATE KEY UPDATE sportsman_id_in = IFNULL(ts.sports_id, " \
                                          "sportsman_id_in)" \
                                          ", sportsman_name_in = IFNULL(ts.sports_name, i.sportsman_name_in), " \
-                                         "enabled = IF(qsr_team_season_event.event_id, 1, 0) "
+                                         "enabled = IF(qsr_team_season_event_temp.event_id, 1, 0) "
             tx.execute(insertIntoIn)
 
     def _conditional_lottery(self, tx, item):

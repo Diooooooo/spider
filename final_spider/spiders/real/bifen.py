@@ -22,9 +22,6 @@ class BifenSpider(scrapy.Spider):
         firstTd = response.xpath('//table[@class="mtable"]/tr')[1].xpath('td')
         if firstTd[0].xpath('img') or firstTd[4].xpath('img'):
             season_fids = response.url.split('=')
-            # real = EventRealItem()
-            # real['season_fid'] = season_fids[len(season_fids) - 1]
-            # yield real
             for r in response.xpath('//table[@class="mtable"]/tr')[1:]:
                 td = r.xpath('td')
                 if td[0].xpath('img') or td[4].xpath('img'):

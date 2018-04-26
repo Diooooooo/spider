@@ -39,6 +39,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_insert, item)
         elif item.__class__.__name__ == "SeasonRealItem":
             query = self.dbpool.runInteraction(self._conditional_insert_real, item)
+        elif item.__class__.__name__ == "SeasonOldItem":
+            query = self.dbpool.runInteraction(self._conditional_insert_old, item)
         elif item.__class__.__name__ == "TeamItem":
             query = self.dbpool.runInteraction(self._conditional_team, item)
         elif item.__class__.__name__ == "ScoreItem":
@@ -57,8 +59,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_jishu, item)
         elif item.__class__.__name__ == 'EventItem':
             query = self.dbpool.runInteraction(self._conditional_event, item)
-        # elif item.__class__.__name__ == 'EventRealItem':
-        #     query = self.dbpool.runInteraction(self._conditional_event_real, item)
+        elif item.__class__.__name__ == 'EventRealItem':
+            query = self.dbpool.runInteraction(self._conditional_event_real, item)
         elif item.__class__.__name__ == 'CountryItem':
             query = self.dbpool.runInteraction(self._conditional_country, item)
         elif item.__class__.__name__ == 'LeagueItem':
@@ -136,11 +138,11 @@ class FinalSpiderPipeline(object):
                      "\" AS team_home, \"" + count + "\" AS team_home_count, \"" + item['team_country'] + \
                      "\" as team_country, \"" + item['team_city'] + "\" AS team_city, \"" + item['team_price'] + \
                      "\" AS team_price, \"" + str(item['team_fid']) + "\" AS team_fid) i " \
-                     "LEFT JOIN qsr_league_country l on l.country_name = i.team_country " \
-                      "ON DUPLICATE KEY UPDATE team_home = i.team_home, team_name = i.team_name, " \
-                      "team_name_en = i.team_name_en,team_icon = i.team_icon_file_id, " \
-                      "team_createdate = i.team_createdate, team_home_count= i.team_home_count, " \
-                      "team_city = i.team_city, team_price = i.team_price, country_id = IFNULL(l.country_id, 0)"
+                                                                      "LEFT JOIN qsr_league_country l on l.country_name = i.team_country " \
+                                                                      "ON DUPLICATE KEY UPDATE team_home = i.team_home, team_name = i.team_name, " \
+                                                                      "team_name_en = i.team_name_en,team_icon = i.team_icon_file_id, " \
+                                                                      "team_createdate = i.team_createdate, team_home_count= i.team_home_count, " \
+                                                                      "team_city = i.team_city, team_price = i.team_price, country_id = IFNULL(l.country_id, 0)"
         if len(year) == 0:
             insertInto = "INSERT INTO qsr_team (team_name,team_name_en,team_icon," \
                          "team_home,team_home_count,team_country,team_city,team_price, team_fid) SELECT i.team_name, i.team_name_en, " \
@@ -189,13 +191,22 @@ class FinalSpiderPipeline(object):
         insertInto = "UPDATE qsr_team_season s " \
                      "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
                      + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, " \
-                     "\"" + str(item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
-                     + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b) i " \
-                     "ON s.season_fid = i.season_fid " \
-                     "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
-                     "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
-                     "SET s.status_id = i.status_name, s.season_fs_a = i.fs_a, s.season_fs_b = i.fs_b "
+                                                                              "\"" + str(
+            item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
+                     + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b, \"" \
+                     + str(item['playing']) + "\" AS playing) i ON s.season_fid = i.season_fid " \
+                                         "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
+                                         "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
+                                         "SET s.status_id = i.status_name, s.season_fs_a = i.fs_a, s.season_fs_b = i.fs_b, " \
+                                         "s.season_playing_time = i.playing "
         tx.execute(insertInto)
+
+    def _conditional_insert_old(self, tx, item):
+        old = 'UPDATE qsr_team_season s INNER JOIN (SELECT ' + str(item['fid']) + ' AS fid, ' \
+              + str(item['score_a']) + ' AS sa, ' + str(item['score_b']) + ' AS sb, ' \
+              + str(item['status']) + ' AS status_id) i ' \
+              'ON s.season_fid = i.fid SET s.season_fs_a = i.sa, s.season_fs_b = i.sb, s.status_id = i.status_id'
+        tx.execute(old)
 
     def _conditional_score(self, tx, item):
         insertInto = "INSERT INTO qsr_team_season_ranking_list_item (type_id ,league_id ,league_year ,team_id ," \
@@ -203,16 +214,12 @@ class FinalSpiderPipeline(object):
                      "item_avg_lose,item_probability_vicotry,item_probability_deuce,item_probability_lose,item_source) " \
                      "SELECT lt.type_id, l.lea_id, i.league_year, t.team_id, i.team_count, i.vicotry, i.deuce, " \
                      "i.lose, i.team_in, i.team_out, i.win, i.avg_vicotry, i.avg_lose, i.p_v, i.p_d, i.p_l, " \
-                     "i.team_source FROM (SELECT \"" + item['type_name'] + "\" AS type_name, " \
-                                                                           "\"" + item[
-                         'league_name'] + "\" AS league_name, \"" + item['league_year'] + "\" AS league_year," \
-                                                                                          " \"" + item[
-                         'team_name'] + "\" AS team_name, \"" + item['season_count'] + "\" AS team_count, " \
-                                                                                       "\"" + item[
-                         'season_vicotry'] + "\" AS vicotry, \"" + item['season_deuce'] + "\" AS deuce, " \
-                                                                                          "\"" + item[
-                         'season_lose'] + "\" AS lose, \"" + item['season_in'] + "\" AS team_in, " \
-                                                                                 "\"" + item[
+                     "i.team_source FROM (SELECT \"" + item['type_name'] + "\" AS type_name, \"" + item[
+                         'league_name'] + "\" AS league_name, \"" + item['league_year'] + "\" AS league_year, \"" + \
+                     item[
+                         'team_name'] + "\" AS team_name, \"" + item['season_count'] + "\" AS team_count, \"" + item[
+                         'season_vicotry'] + "\" AS vicotry, \"" + item['season_deuce'] + "\" AS deuce, \"" + item[
+                         'season_lose'] + "\" AS lose, \"" + item['season_in'] + "\" AS team_in, \"" + item[
                          'season_out'] + "\" AS team_out, \"" + item['season_win'] + "\" AS win, \"" + \
                      item['avg_vicotry'] + "\" AS avg_vicotry, \"" + item['avg_lose'] + "\" AS avg_lose, \"" \
                      + item['probability_vicotry'] + "\" as p_v, \"" + item['probability_deuce'] + "\" AS p_d, \"" \
@@ -322,12 +329,10 @@ class FinalSpiderPipeline(object):
                                            "qsr_team_season_plan_item.item_id, 1, 0) "
         tx.execute(insertInto)
 
-
-    # def _conditional_event_real(self, tx, item):
-    #     real = "UPDATE qsr_team_season_event e INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
-    #            "SET e.enabled = 0 WHERE s.season_fid = " + item['season_fid']
-    #     tx.execute(real)
-
+    def _conditional_event_real(self, tx, item):
+        real = "UPDATE qsr_team_season_event_temp e INNER JOIN qsr_team_season s ON e.season_id = s.season_id " \
+               "SET e.enabled = 0 WHERE s.season_fid = " + item['season_fid']
+        tx.execute(real)
 
     def _conditional_event(self, tx, item):
         if 'player-change' == item['type']:

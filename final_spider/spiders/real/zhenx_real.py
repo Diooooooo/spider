@@ -7,10 +7,14 @@ from scrapy import Request
 from final_spider.items import PlanItem, PlanRelationItem
 
 
+# ******************************
+#            阵型
+# ******************************
+
 class ZhenxSpider(scrapy.Spider):
     name = 'zhenx_real'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getPlanSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getPlanSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

@@ -7,10 +7,14 @@ from scrapy import Request
 from final_spider.items import EventItem
 
 
+# ******************************************
+#               结束比赛事件
+# ******************************************
+
 class BifenSpider(scrapy.Spider):
     name = 'bifen_over'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getOldSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getOldSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

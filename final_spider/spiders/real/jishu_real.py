@@ -7,10 +7,14 @@ from scrapy import Request
 from final_spider.items import TechniqueItem
 
 
+# ******************************************
+#                技术统计
+# ******************************************
+
 class JishuSpider(scrapy.Spider):
     name = 'jishu_real'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getPlayingSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

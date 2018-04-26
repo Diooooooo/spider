@@ -14,27 +14,16 @@ from final_spider.items import SeasonItem
 # ******************************
 
 class LqjSpider(scrapy.Spider):
-    name = 'season_now'
+    name = 'season_manual'
     allowed_domains = ['500.com']
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
-        for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
-            for li in t.xpath('li'):
-                for d in li.xpath('div/a'):
-                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info, dont_filter=True)
-
-        for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
-            for li in t.xpath('li'):
-                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
-
         for t in response.xpath('//table[@class="lrace_bei"]'):
             for tr in t.xpath('tr'):
                 for td in tr.xpath("td"):
-                    yield Request(response.urljoin(td.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
-    # def parse_info(self, response):
-    #     for t in response.xpath('//ul[@class="ldrop_list"]/li')[1:4]:
-    #         yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)
+                    if td.xpath('a/text()').extract_first() in ['欧罗巴', '欧冠', '解放者杯', '亚冠杯']:
+                        yield Request(response.urljoin(td.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
 
     def parse_item_info(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
@@ -43,10 +32,12 @@ class LqjSpider(scrapy.Spider):
     def parse_detail_info(self, response):
         for r in response.xpath('//div[@class="ltab_hd lmb3 clearfix"]/a'):
             if r.xpath('@data-id'):
-                yield Request(response.urljoin(r.xpath('@href').extract_first()), self.parse_line_info2, dont_filter=True)
+                yield Request(response.urljoin(r.xpath('@href').extract_first()),
+                              self.parse_line_info2, dont_filter=True)
         for r in response.xpath('//div[@class="ltab_hd lmb2 clearfix"]/a'):
             if r.xpath('@data-id'):
-                yield Request(response.urljoin(r.xpath('@href').extract_first()), self.parse_line_info, dont_filter=True)
+                yield Request(response.urljoin(r.xpath('@href').extract_first()),
+                              self.parse_line_info, dont_filter=True)
 
     def parse_line_info(self, response):
         if response.xpath('//ul[@id="match_group"]'):
@@ -54,7 +45,8 @@ class LqjSpider(scrapy.Spider):
             for s in response.xpath('//ul[@class="lsaiguo_round_list clearfix"]/li'):
                 url = 'http://liansai.500.com/index.php?c=score&a=getmatch&stid=%s&round=%s' % (
                 str(response.url).split("-")[2][:-1], s.xpath('a/@data-group').extract_first())
-                infoJson = json.loads(str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url)).read(), "html.parser")))
+                infoJson = json.loads(str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url)).read(),
+                                                        "html.parser")))
                 for t in infoJson:
                     season = SeasonItem()
                     season['league_name'] = response.xpath(
@@ -74,7 +66,8 @@ class LqjSpider(scrapy.Spider):
                         season['score_b'] = 0
 
                     statusId = 1
-                    if t['status'] == -1 or t['status'] == 2 or t['status'] == 4 or t['status'] == 6 or t['status'] == 7 or t['status'] == 11:
+                    if t['status'] == -1 or t['status'] == 2 or t['status'] == 4 \
+                            or t['status'] == 6 or t['status'] == 7 or t['status'] == 11:
                         statusId = 6
                     if t['status'] == 1:
                         statusId = 5

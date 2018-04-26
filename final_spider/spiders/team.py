@@ -25,6 +25,13 @@ class TeamSpider(scrapy.Spider):
             for li in t.xpath('li'):
                 yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_info)
 
+        for t in response.xpath('//table[@class="lrace_bei"]'):
+            for tr in t.xpath('tr'):
+                for td in tr.xpath("td"):
+                    if td.xpath('a/text()').extract_first() in ['欧罗巴', '欧冠', '解放者杯', '亚冠杯']:
+                        yield Request(response.urljoin(td.xpath('a/@href').extract_first()),
+                                  self.parse_info, dont_filter=True)
+
     def parse_info(self, response):
         for t in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
             yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)

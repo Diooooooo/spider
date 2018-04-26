@@ -4,13 +4,17 @@ import json
 import scrapy
 from scrapy import Request
 
-from final_spider.items import EventItem
+from final_spider.items import EventItem, EventRealItem
 
+
+# ******************************************
+#               进行中比赛事件
+# ******************************************
 
 class BifenSpider(scrapy.Spider):
     name = 'bifen'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getPlayingSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
@@ -22,6 +26,9 @@ class BifenSpider(scrapy.Spider):
         firstTd = response.xpath('//table[@class="mtable"]/tr')[1].xpath('td')
         if firstTd[0].xpath('img') or firstTd[4].xpath('img'):
             season_fids = response.url.split('=')
+            real = EventRealItem()
+            real['season_fid'] = season_fids[len(season_fids) - 1]
+            yield real
             for r in response.xpath('//table[@class="mtable"]/tr')[1:]:
                 td = r.xpath('td')
                 if td[0].xpath('img') or td[4].xpath('img'):

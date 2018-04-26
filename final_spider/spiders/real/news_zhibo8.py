@@ -5,6 +5,10 @@ from scrapy import Request
 from final_spider.items import NewsItem
 
 
+# ******************************************
+#                   新闻
+# ******************************************
+
 class NewsZhibo8Spider(scrapy.Spider):
     name = 'news_zhibo8'
     allowed_domains = ['http://news.zhibo8.cc']

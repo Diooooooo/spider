@@ -8,24 +8,34 @@ from scrapy import Request
 from final_spider.items import ScoreItem
 
 
+# ******************************************
+#                  排行榜
+# ******************************************
+
 class ScoreSpider(scrapy.Spider):
     name = 'score_real'
     allowed_domains = ['500.com']
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
+        leagues = ['英超', '西甲', '意甲', '德甲', '法甲', '世界杯', '欧冠', '欧罗巴']
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
             for li in t.xpath('li'):
                 for d in li.xpath('div/a'):
-                    yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info, dont_filter=True)
+                    if d.xpath('text()').extract_first() in leagues:
+                        yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info, dont_filter=True)
 
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
             for li in t.xpath('li'):
-                yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
+                if li.xpath('a/span/text()').extract_first() in leagues:
+                    yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info, dont_filter=True)
 
     def parse_item_info(self, response):
-        yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
-                      self.parse_item_url_info, dont_filter=True)
+        for s in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
+            yield Request(response.urljoin(s.xpath('a/@href').extract_first()), self.parse_item_item_info, dont_filter=True)
+
+    def parse_item_item_info(self, response):
+        yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()), self.parse_item_url_info, dont_filter=True)
 
     def parse_item_url_info(self, response):
         types = ['总榜单', '主场', '客场', '上半场', '下半场']

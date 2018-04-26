@@ -7,10 +7,14 @@ from scrapy import Request
 from final_spider.items import OddsItem
 
 
+# ******************************************
+#                   欧赔
+# ******************************************
+
 class OuzhiSpider(scrapy.Spider):
     name = 'ouzhi_real'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getFutureSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getFutureSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

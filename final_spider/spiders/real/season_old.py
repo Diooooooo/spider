@@ -4,13 +4,17 @@ import json
 import scrapy
 from scrapy import Request
 
-from final_spider.items import SeasonItem, SeasonRealItem
+from final_spider.items import SeasonOldItem
 
+
+# ******************************
+#           DELETE
+# ******************************
 
 class SeasonTypeDemoSpider(scrapy.Spider):
     name = 'season_old'
     allowed_domains = ['500.com']
-    start_urls = ['http://liangqiujiang.com:8080/api/internal/getOldSeason?manager=12345qwert']
+    start_urls = ['https://www.liangqiujiang.com/api/internal/getOldSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())
@@ -21,14 +25,7 @@ class SeasonTypeDemoSpider(scrapy.Spider):
         tds = response.xpath('//div[@class="t1"]/table/tr/td')
         if tds:
             source = tds[2].xpath('span/text()').extract_first()
-            season = SeasonRealItem()
-            # season['league_name'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[:1][0]
-            # season['type_name'] = ''
-            # season['sub_type_name'] = ''
-            # season['game_week'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[-1:][0].split('第')[1:][0][:-1]
-            season['start_time'] = response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[:1][0] + ' ' + response.xpath('//div[@class="h"]/a/text()').extract_first().split(' ')[1:2][0]
-            season['team_a'] = tds[0].xpath('h2/a/text()').extract_first()
-            season['team_b'] = tds[4].xpath('h2/a/text()').extract_first()
+            season = SeasonOldItem()
             season['score_a'] = str.strip(source.split('-')[0])
             season['score_b'] = str.strip(source.split('-')[1])
             season['status'] = 4

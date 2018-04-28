@@ -45,6 +45,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_team, item)
         elif item.__class__.__name__ == "ScoreItem":
             query = self.dbpool.runInteraction(self._conditional_score, item)
+        elif item.__class__.__name__ == "ScoreSportsmanItem":
+            query = self.dbpool.runInteraction(self._conditional_scoreSportsman, item)
         elif item.__class__.__name__ == "SportsmanItem":
             query = self.dbpool.runInteraction(self._conditional_sportsman, item)
         elif item.__class__.__name__ == "RelationItem":
@@ -190,15 +192,13 @@ class FinalSpiderPipeline(object):
     def _conditional_insert_real(self, tx, item):
         insertInto = "UPDATE qsr_team_season s " \
                      "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
-                     + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, " \
-                                                                              "\"" + str(
-            item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
+                     + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, \"" + str(
+                     item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
                      + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b, \"" \
                      + str(item['playing']) + "\" AS playing) i ON s.season_fid = i.season_fid " \
-                                         "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
-                                         "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
-                                         "SET s.status_id = i.status_name, s.season_fs_a = i.fs_a, s.season_fs_b = i.fs_b, " \
-                                         "s.season_playing_time = i.playing "
+                     "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
+                     "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
+                     "SET s.status_id = i.status_name, s.season_playing_time = i.playing "
         tx.execute(insertInto)
 
     def _conditional_insert_old(self, tx, item):
@@ -235,6 +235,20 @@ class FinalSpiderPipeline(object):
         modify_league = "UPDATE qsr_league e SET e.is_score = 1 WHERE e.lea_name = \"" + item['league_name'] + "\""
         tx.execute(insertInto)
         tx.execute(modify_league)
+
+    def _conditional_scoreSportsman(self, tx, item):
+        inertInto = 'INSERT INTO qsr_team_season_ranking_list_item(type_id, league_id, ' \
+                    'league_year, team_id, item_count, item_avg_vicotry) ' \
+                    'SELECT i.type_id, l.lea_id, i.league_year, t.team_id, i.item_count, i.item_avg_vicotry ' \
+                    'FROM (SELECT "' + str(item['type_name']) + '" AS type_id, "' + \
+                    str(item['league_name']) +'" AS league_name, "' + str(item['league_year']) + '" AS league_year, "' + \
+                    str(item['team_id']) + '" AS team_id, "' + str(item['season_count']) + '" AS item_count, "' + \
+                    str(item['avg_vicotry']) + '" AS item_avg_vicotry) i ' \
+                    'INNER JOIN qsr_league l on i.league_name = l.lea_name ' \
+                    'INNER JOIN qsr_team t ON i.team_id = t.team_fid ' \
+                    'INNER JOIN qsr_team_season_ranking_list_type lt ON i.type_id = lt.type_id ' \
+                    'ON DUPLICATE KEY UPDATE item_count = i.item_count, item_avg_vicotry = i.item_avg_vicotry'
+        tx.execute(inertInto)
 
     def _conditional_sportsman(self, tx, item):
         number = item['league_sports_number']

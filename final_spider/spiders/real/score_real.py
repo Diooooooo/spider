@@ -5,7 +5,7 @@ from urllib.parse import unquote
 import scrapy
 from scrapy import Request
 
-from final_spider.items import ScoreItem
+from final_spider.items import ScoreItem, ScoreSportsmanItem
 
 
 # ******************************************
@@ -35,6 +35,34 @@ class ScoreSpider(scrapy.Spider):
             yield Request(response.urljoin(s.xpath('a/@href').extract_first()), self.parse_item_item_info, dont_filter=True)
 
     def parse_item_item_info(self, response):
+        year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
+        if '/' in year:
+            year = year.split('/')[1] + '-00-00'
+        else:
+            year = year + '-00-00'
+        # 射手榜
+        for q in response.xpath('//table[@class="lstable2 lshesb_list_s jTrHover"]/tr'):
+            ssi = ScoreSportsmanItem()
+            ssi['sp_id'] = str(q.xpath('td[1]/a/@href').extract_first()).split('-')[1][:-1]
+            ssi['team_id'] = str(q.xpath('td[2]/a/@href').extract_first()).split('/')[2]
+            ssi['season_count'] = str(q.xpath('td[3]/text()').extract_first())[:-1]
+            ssi['avg_vicotry'] = str(q.xpath('td[4]/text()').extract_first()).split(' ')[0]
+            ssi['type_name'] = str(41)
+            ssi['league_name'] = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
+            ssi['league_year'] = year
+            yield ssi
+        # 助攻榜
+        for z in response.xpath('//table[@class="lstable2 lzhugb_list_s jTrHover"]/tr'):
+            ssi2 = ScoreSportsmanItem()
+            ssi2['sp_id'] = str(z.xpath('td[1]/a/@href').extract_first()).split('-')[1][:-1]
+            ssi2['team_id'] = str(z.xpath('td[2]/a/@href').extract_first()).split('/')[2]
+            ssi2['season_count'] = str(z.xpath('td[3]/text()').extract_first())[:-1]
+            ssi2['avg_vicotry'] = str(z.xpath('td[4]/text()').extract_first()).split(' ')[0]
+            ssi2['type_name'] = str(42)
+            ssi2['league_name'] = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
+            ssi2['league_year'] = year
+            yield ssi2
+        # 球队榜
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()), self.parse_item_url_info, dont_filter=True)
 
     def parse_item_url_info(self, response):

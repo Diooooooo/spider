@@ -68,18 +68,19 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 PROXIES = [
-    {'ip_port': '122.114.31.177:808', 'user_pass': ''},
-    {'ip_port': '61.135.217.7:80', 'user_pass': ''},
-    {'ip_port': '116.231.63.104:8118', 'user_pass': ''},
-    {'ip_port': '112.114.95.236:8118', 'user_pass': ''},
-    {'ip_port': '223.241.78.23:808', 'user_pass': ''},
-    {'ip_port': '114.252.165.173:8118', 'user_pass': ''},
-    {'ip_port': '121.31.148.35:8123', 'user_pass': ''},
-    {'ip_port': '116.54.78.3:8118', 'user_pass': ''},
-    {'ip_port': '27.10.232.26:8118', 'user_pass': ''},
-    {'ip_port': '123.55.3.156:808', 'user_pass': ''},
-    {'ip_port': '49.85.5.176:46489', 'user_pass': ''},
-    {'ip_port': '121.206.86.91:21317', 'user_pass': ''},
+    # {'ip_port': '122.114.31.177:808', 'user_pass': ''},
+    # {'ip_port': '61.135.217.7:80', 'user_pass': ''},
+    # {'ip_port': '116.231.63.104:8118', 'user_pass': ''},
+    # {'ip_port': '112.114.95.236:8118', 'user_pass': ''},
+    # {'ip_port': '223.241.78.23:808', 'user_pass': ''},
+    # {'ip_port': '114.252.165.173:8118', 'user_pass': ''},
+    # {'ip_port': '121.31.148.35:8123', 'user_pass': ''},
+    # {'ip_port': '116.54.78.3:8118', 'user_pass': ''},
+    # {'ip_port': '27.10.232.26:8118', 'user_pass': ''},
+    # {'ip_port': '123.55.3.156:808', 'user_pass': ''},
+    # {'ip_port': '49.85.5.176:46489', 'user_pass': ''},
+    {'ip_port': '14.120.182.9:61234', 'user_pass': ''},
+    # {'ip_port': '122.114.31.177:808', 'user_pass': ''},
 ]
 
 # Enable or disable extensions
@@ -117,7 +118,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 MYSQL_HOST = '192.168.1.170'
-MYSQL_DBNAME = 'qsr_18118'
+MYSQL_DBNAME = 'qsr'
 MYSQL_USER = 'root'
 MYSQL_PASSWD = 'qsr1225'
 MYSQL_PORT = 3306

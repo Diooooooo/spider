@@ -34,6 +34,6 @@ bifen
 lottery
 """
 from scrapy import cmdline
-name = 'zhenx_real'
+name = 'score_real'
 cmd = 'scrapy crawl {0}'.format(name)
 cmdline.execute(cmd.split())

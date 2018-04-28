@@ -45,6 +45,7 @@ class SeasonItem(scrapy.Item):
     type_name = scrapy.Field()
     sub_type_name = scrapy.Field()
     fid = scrapy.Field()
+    year = scrapy.Field()
 
 
 class SeasonRealItem(scrapy.Item):
@@ -107,6 +108,16 @@ class ScoreItem(scrapy.Item):
     season_source = scrapy.Field()
     league_name = scrapy.Field()
     league_year = scrapy.Field()
+
+
+class ScoreSportsmanItem(scrapy.Item):
+    type_name = scrapy.Field()
+    league_name = scrapy.Field()
+    league_year = scrapy.Field()
+    sp_id = scrapy.Field()
+    team_id = scrapy.Field()
+    season_count = scrapy.Field()
+    avg_vicotry = scrapy.Field()
 
 
 class SportsmanItem(scrapy.Item):

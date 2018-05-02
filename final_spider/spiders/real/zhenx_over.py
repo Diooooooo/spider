@@ -10,7 +10,7 @@ from final_spider.items import PlanItem, PlanRelationItem
 class ZhenxSpider(scrapy.Spider):
     name = 'zhenx_over'
     allowed_domains = ['500.com']
-    start_urls = ['https://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
+    start_urls = ['http://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

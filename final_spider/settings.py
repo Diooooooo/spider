@@ -64,24 +64,13 @@ ROBOTSTXT_OBEY = False
 DOWNLOADER_MIDDLEWARES = {
    'final_spider.middlewares.FinalSpiderSpiderMiddleware': 1,
    # 'final_spider.middlewares.JsPageMiddleware': 2,
-   # 'final_spider.middlewares.ProxyMiddleware': 100,
+   'final_spider.middlewares.ProxyMiddleware': 100,
 }
 
-PROXIES = [
-    # {'ip_port': '122.114.31.177:808', 'user_pass': ''},
-    # {'ip_port': '61.135.217.7:80', 'user_pass': ''},
-    # {'ip_port': '116.231.63.104:8118', 'user_pass': ''},
-    # {'ip_port': '112.114.95.236:8118', 'user_pass': ''},
-    # {'ip_port': '223.241.78.23:808', 'user_pass': ''},
-    # {'ip_port': '114.252.165.173:8118', 'user_pass': ''},
-    # {'ip_port': '121.31.148.35:8123', 'user_pass': ''},
-    # {'ip_port': '116.54.78.3:8118', 'user_pass': ''},
-    # {'ip_port': '27.10.232.26:8118', 'user_pass': ''},
-    # {'ip_port': '123.55.3.156:808', 'user_pass': ''},
-    # {'ip_port': '49.85.5.176:46489', 'user_pass': ''},
-    {'ip_port': '14.120.182.9:61234', 'user_pass': ''},
-    # {'ip_port': '122.114.31.177:808', 'user_pass': ''},
-]
+# PROXIES = [
+#     {'ip_port': '122.114.31.177:808', 'user_pass': ''},
+#     {'ip_port': '61.135.217.7:80', 'user_pass': ''},
+# ]
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html

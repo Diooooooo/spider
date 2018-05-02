@@ -68,7 +68,7 @@ class FinalSpiderPipeline(object):
         elif item.__class__.__name__ == 'LeagueItem':
             query = self.dbpool.runInteraction(self._conditional_league, item)
         elif item.__class__.__name__ == 'SeasonTypeItem':
-            query = self.dbpool.runInteraction(self._conditional_season_type, item);
+            query = self.dbpool.runInteraction(self._conditional_season_type, item)
         elif item.__class__.__name__ == 'SeasonSubTypeItem':
             query = self.dbpool.runInteraction(self._conditional_season_sub_type, item)
         elif item.__class__.__name__ == 'LotteryItem':
@@ -174,7 +174,7 @@ class FinalSpiderPipeline(object):
                          'team_b'] + "\" AS team_b, \"" + item['game_week'] + "\" AS gameweek, \"" + str(item[
                                                                                                              'score_a']) + "\" AS fs_a, \"" + str(
             item['score_b']) + "\" AS fs_b, \"" + item[
-                         'start_time'] + "\" AS year_, \"" + str(item['status']) + "\" AS status_name, \"" + \
+                         'year'] + "\" AS year_, \"" + str(item['status']) + "\" AS status_name, \"" + \
                      item['type_name'] + "\" AS type_name, \"" + item['sub_type_name'] + "\" AS sub_type_name, \"" + \
                      item[
                          'fid'] + "\" AS season_fid) i " \
@@ -192,13 +192,14 @@ class FinalSpiderPipeline(object):
     def _conditional_insert_real(self, tx, item):
         insertInto = "UPDATE qsr_team_season s " \
                      "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
-                     + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, \"" + str(
-                     item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
+                     + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, \"" \
+                     + str(item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
                      + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b, \"" \
                      + str(item['playing']) + "\" AS playing) i ON s.season_fid = i.season_fid " \
                      "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
                      "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
-                     "SET s.status_id = i.status_name, s.season_playing_time = i.playing "
+                     "SET s.status_id = i.status_name, s.season_playing_time = i.playing, " \
+                     "season_fs_a = i.fs_a, season_fs_b = i.fs_b"
         tx.execute(insertInto)
 
     def _conditional_insert_old(self, tx, item):

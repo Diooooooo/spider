@@ -12,7 +12,7 @@ from final_spider.items import NewsItem
 class NewsZhibo8Spider(scrapy.Spider):
     name = 'news_zhibo8'
     allowed_domains = ['http://news.zhibo8.cc']
-    start_urls = ['https://news.zhibo8.cc/zuqiu/more.htm']
+    start_urls = ['http://news.zhibo8.cc/zuqiu/more.htm']
 
     def parse(self, response):
         i = 0

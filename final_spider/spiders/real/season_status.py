@@ -20,7 +20,7 @@ class SeasonTypeDemoSpider(scrapy.Spider):
 
     def parse(self, response):
         jsonInfo = json.loads(str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(
-            'https://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert')).read(),
+            'http://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert')).read(),
                                                 "html.parser")))
         txt = json.loads(str(BeautifulSoup(
             urllib.request.urlopen('http://live.500.com/static/info/bifen/xml/livedata/all/Full.txt').read(),

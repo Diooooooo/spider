@@ -90,11 +90,9 @@ class LqjSpider(scrapy.Spider):
                         season['score_b'] = 0
 
                     statusId = 1
-                    if t['status'] == -1 or t['status'] == 2 or t['status'] == 4 or t['status'] == 6 or t['status'] == 7 or t['status'] == 11:
+                    if t['status'] in ['-1', '2', '4', '6', '7', '11']:
                         statusId = 6
-                    if t['status'] == 1:
-                        statusId = 5
-                    if t['status'] == 5:
+                    if t['status'] == '5':
                         statusId = 4
                     season['status'] = statusId
                     season['fid'] = t['fid']
@@ -136,8 +134,6 @@ class LqjSpider(scrapy.Spider):
         status = s.xpath('@data-status').extract_first()
         if status in ['-1', '2', '4', '6', '7', '11']:
             statusId = 6
-        if status == '1':
-            statusId = 5
         if status == '5':
             statusId = 4
         season['status'] = statusId
@@ -174,8 +170,6 @@ class LqjSpider(scrapy.Spider):
             status = t.xpath('@data-status').extract_first()
             if status in ['-1', '2', '4', '6', '7', '11']:
                 statusId = 6
-            if status == '1':
-                statusId = 5
             if status == '5':
                 statusId = 4
             season['status'] = statusId

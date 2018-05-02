@@ -14,7 +14,7 @@ from final_spider.items import SeasonItem, SeasonRealItem
 class SeasonTypeDemoSpider(scrapy.Spider):
     name = 'season_real'
     allowed_domains = ['500.com']
-    start_urls = ['https://www.liangqiujiang.com/api/internal/getOddsSeason?manager=12345qwert']
+    start_urls = ['http://www.liangqiujiang.com/api/internal/getOddsSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

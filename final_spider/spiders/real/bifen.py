@@ -14,7 +14,7 @@ from final_spider.items import EventItem, EventRealItem
 class BifenSpider(scrapy.Spider):
     name = 'bifen'
     allowed_domains = ['500.com']
-    start_urls = ['https://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
+    start_urls = ['http://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert']
 
     def parse(self, response):
         jsonInfo = json.loads(response.body.decode())

@@ -4,14 +4,15 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import random
 from base64 import encodebytes
-from random import choice
+from datetime import time
 
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
 
-from final_spider.settings import PROXIES, USER_AGENT_CHOICES
+from final_spider.settings import USER_AGENT_CHOICES
 
 
 class FinalSpiderSpiderMiddleware(object):
@@ -28,7 +29,7 @@ class FinalSpiderSpiderMiddleware(object):
         # s = cls()
         # crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         # return s
-        user_agents = choice(USER_AGENT_CHOICES)
+        user_agents = random.choice(USER_AGENT_CHOICES)
 
         if not user_agents:
             raise NotConfigured("USER_AGENT_CHOICES not set or empty")
@@ -76,23 +77,36 @@ class FinalSpiderSpiderMiddleware(object):
     def process_request(self, request, spider):
         if not self.enabled or not self.user_agents:
             return
-        request.headers['user-agent'] = choice(self.user_agents)
+        request.headers['user-agent'] = random.choice(self.user_agents)
 
 
 class ProxyMiddleware(object):
+
+    def get_random_proxy(self):
+        while 1:
+            with open('c:\\work\\proxy') as f:
+                proxies = f.readlines()
+            if proxies:
+                break
+            else:
+                time.sleep(1)
+        proxy = random.choice(proxies).strip()
+        return proxy
+
     def process_request(self, request, spider):
-        proxy = choice(PROXIES)
-        if proxy['user_pass'] is not None:
-            request.meta['proxy'] = "http://%s" % proxy['ip_port']
-            encoded_user_pass = str(encodebytes(bytes(proxy['user_pass'], encoding='utf8')), encoding='utf-8')
-            request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
-            print("**************ProxyMiddleware have pass************" + proxy['ip_port'])
-        else:
-            print("**************ProxyMiddleware no pass************" + proxy['ip_port'])
-            request.meta['proxy'] = "http://%s" % proxy['ip_port']
+        proxy = self.get_random_proxy()
+        request.meta['proxy'] = "http://%s" % proxy
+        encoded_user_pass = str(encodebytes(bytes(proxy, encoding='utf8')), encoding='utf-8')
+        request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
+
+    def proxcess_response(self, request, response, spider):
+        if response.stauts != 200:
+            proxy = self.get_random_proxy()
+            request.meta['proxy'] = proxy
+            return request
+        return response
 
 class JsPageMiddleware(object):
     def process_request(self, request, spider):
         if spider.name == 'score_real':
-            print('request:{0}'.format(request.url))
             return HtmlResponse(request.url)

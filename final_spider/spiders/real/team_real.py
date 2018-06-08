@@ -10,35 +10,34 @@ from final_spider.items import TeamItem
 
 
 class TeamSpider(scrapy.Spider):
-    name = 'team'
+    name = 'team_real'
     allowed_domains = ['500.com']
     start_urls = ['http://liansai.500.com/']
 
 
     def parse(self, response):
-        types = ['世界杯']
+        types = ['世界杯', '友谊赛', '挪超', '瑞典超', '巴甲', '解放者杯', '比甲', '南俱杯', '巴西杯']
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
             for li in t.xpath('li'):
                 for d in li.xpath('div/a'):
                     if d.xpath('text()').extract_first() in types:
-                        yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_info)
+                        yield Request(response.urljoin(d.xpath('@href').extract_first()), self.parse_item_info)
 
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
             for li in t.xpath('li'):
                 if li.xpath('a/span/text()').extract_first() in types:
-                    yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_info)
+                    yield Request(response.urljoin(li.xpath('a/@href').extract_first()), self.parse_item_info)
 
         for t in response.xpath('//table[@class="lrace_bei"]'):
             for tr in t.xpath('tr'):
                 for td in tr.xpath("td"):
                     if td.xpath('a/text()').extract_first() in types:
-                    # if td.xpath('a/text()').extract_first() in ['欧罗巴', '欧冠', '解放者杯', '亚冠杯']:
                         yield Request(response.urljoin(td.xpath('a/@href').extract_first()),
-                                  self.parse_info, dont_filter=True)
+                                  self.parse_item_info, dont_filter=True)
 
-    def parse_info(self, response):
-        for t in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
-            yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)
+    # def parse_info(self, response):
+    #     for t in response.xpath('//ul[@class="ldrop_list"]/li')[:4]:
+    #         yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)
 
     def parse_item_info(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
@@ -50,8 +49,9 @@ class TeamSpider(scrapy.Spider):
         for r in response.xpath('//div[@class="ltab_hd lmb2 clearfix"]/a'):
             yield Request(response.urljoin(r.xpath('@href').extract_first()), self.parse_season_history, dont_filter=True)
         for r in response.xpath('//div[@class="ltab_hd"]/a')[:1]:
-            for d in r.xpath('//table[@class="ljifen_list ltable lmb4 jTrHover"]/tbody/tr')[1:]:
-                yield Request(response.urljoin('http://liansai.500.com' + d.xpath('td[3]/span/a/@href').extract_first()), callback=self.parse_team)
+            for d in r.xpath('//table[@class="ljifen_list ltable lmb4 jTrHover"]/tr')[1:]:
+                if d.xpath('td[3]/span/a/@href').extract_first():
+                    yield Request(response.urljoin('http://liansai.500.com' + d.xpath('td[3]/span/a/@href').extract_first()), callback=self.parse_team)
 
     def parse_season_history(self, response):
         if response.xpath('//ul[@id="match_group"]'):
@@ -78,7 +78,10 @@ class TeamSpider(scrapy.Spider):
         team_info = TeamItem()
         team_info['team_name'] = str.strip(response.xpath('//div[@class="itm_logo"]/img/@alt').extract_first())
         team_info['team_nickname'] = str.strip(response.xpath('//div[@class="itm_tit"]/text()').extract_first())
-        team_info['team_name_en'] = str.strip(response.xpath('//div[@class="itm_name_en"]/text()').extract_first())
+        if response.xpath('//div[@class="itm_name_en"]/text()').extract_first():
+            team_info['team_name_en'] = str.strip(response.xpath('//div[@class="itm_name_en"]/text()').extract_first())
+        else:
+            team_info['team_name_en'] = ''
         url_split = str.split(response.url, '/')
         team_info['team_fid'] = str.strip(url_split[len(url_split) - 2])
         # aTag = response.xpath('//div[@class="lcrumbs"]/a').extract()
@@ -126,6 +129,7 @@ class TeamSpider(scrapy.Spider):
         else:
             team_info['team_createdate'] = ""
         yield team_info
+        # print(team_info)
 
     def parse_season_history_tab(self, response):
         # 遍历赛程 非JSON格式

@@ -4,14 +4,11 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-import random
-from base64 import encodebytes
-from datetime import time
+import base64
+from random import choice
 
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
-from scrapy.http import HtmlResponse
-
 from final_spider.settings import USER_AGENT_CHOICES
 
 
@@ -29,7 +26,7 @@ class FinalSpiderSpiderMiddleware(object):
         # s = cls()
         # crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         # return s
-        user_agents = random.choice(USER_AGENT_CHOICES)
+        user_agents = choice(USER_AGENT_CHOICES)
 
         if not user_agents:
             raise NotConfigured("USER_AGENT_CHOICES not set or empty")
@@ -77,26 +74,25 @@ class FinalSpiderSpiderMiddleware(object):
     def process_request(self, request, spider):
         if not self.enabled or not self.user_agents:
             return
-        request.headers['user-agent'] = random.choice(self.user_agents)
+        request.headers['user-agent'] = choice(self.user_agents)
 
 
 class ProxyMiddleware(object):
 
     def get_random_proxy(self):
         while 1:
-            with open('c:\\work\\proxy') as f:
+            with open('c:\\work\\kuai_proxy') as f:
                 proxies = f.readlines()
             if proxies:
                 break
-            else:
-                time.sleep(1)
-        proxy = random.choice(proxies).strip()
+        proxy = choice(proxies).strip()
         return proxy
 
     def process_request(self, request, spider):
-        proxy = self.get_random_proxy()
-        request.meta['proxy'] = "http://%s" % proxy
-        encoded_user_pass = str(encodebytes(bytes(proxy, encoding='utf8')), encoding='utf-8')
+        proxy = 'https://' + self.get_random_proxy()
+        print('working proxy:' + proxy)
+        request.meta['proxy'] = proxy
+        encoded_user_pass = base64.b64encode(b'18612045235:a0mylhwh').decode('utf-8')
         request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
 
     def proxcess_response(self, request, response, spider):
@@ -105,8 +101,3 @@ class ProxyMiddleware(object):
             request.meta['proxy'] = proxy
             return request
         return response
-
-class JsPageMiddleware(object):
-    def process_request(self, request, spider):
-        if spider.name == 'score_real':
-            return HtmlResponse(request.url)

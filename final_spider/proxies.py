@@ -6,24 +6,24 @@ import requests
 
 
 class Proxies(object):
-
-
     """docstring for Proxies"""
+
     def __init__(self, page=3):
         self.proxies = []
         self.verify_pro = []
         self.page = page
         self.headers = {
-        'Accept': '*/*',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
-        'Accept-Encoding': 'gzip, deflate, sdch',
-        'Accept-Language': 'zh-CN,zh;q=0.8'
+            'Accept': '*/*',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/45.0.2454.101 Safari/537.36',
+            'Accept-Encoding': 'gzip, deflate, sdch',
+            'Accept-Language': 'zh-CN,zh;q=0.8'
         }
         self.get_proxies()
         self.get_proxies_nn()
 
     def get_proxies(self):
-        page = random.randint(1,10)
+        page = random.randint(1, 10)
         page_stop = page + self.page
         while page < page_stop:
             url = 'http://www.xicidaili.com/nt/%d' % page
@@ -31,12 +31,12 @@ class Proxies(object):
             soup = BeautifulSoup(html, 'lxml')
             ip_list = soup.find(id='ip_list')
             for odd in ip_list.find_all(class_='odd'):
-                protocol = odd.find_all('td')[5].get_text().lower()+'://'
+                protocol = odd.find_all('td')[5].get_text().lower() + '://'
                 self.proxies.append(protocol + ':'.join([x.get_text() for x in odd.find_all('td')[1:3]]))
             page += 1
 
     def get_proxies_nn(self):
-        page = random.randint(1,10)
+        page = random.randint(1, 10)
         page_stop = page + self.page
         while page < page_stop:
             url = 'http://www.xicidaili.com/nn/%d' % page
@@ -55,7 +55,7 @@ class Proxies(object):
         new_queue = Queue()
         works = []
         for _ in range(15):
-            works.append(Process(target=self.verify_one_proxy, args=(old_queue,new_queue)))
+            works.append(Process(target=self.verify_one_proxy, args=(old_queue, new_queue)))
         for work in works:
             work.start()
         for proxy in self.proxies:
@@ -71,11 +71,10 @@ class Proxies(object):
             except:
                 break
 
-
     def verify_one_proxy(self, old_queue, new_queue):
         while 1:
             proxy = old_queue.get()
-            if proxy == 0:break
+            if proxy == 0: break
             protocol = 'https' if 'https' in proxy else 'http'
             proxies = {protocol: proxy}
             try:
@@ -90,5 +89,5 @@ if __name__ == '__main__':
     a.verify_proxies()
     proxie = a.proxies
     with open('c:\\work\\proxy', 'a') as f:
-       for proxy in proxie:
-            f.write(proxy+'\n')
+        for proxy in proxie:
+            f.write(proxy + '\n')

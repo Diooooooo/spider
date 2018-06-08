@@ -16,7 +16,6 @@ NEWSPIDER_MODULE = 'final_spider.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'final_spider (+http://www.yourdomain.com)'
 USER_AGENT_CHOICES = [
     'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     'Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)',
@@ -62,14 +61,14 @@ ROBOTSTXT_OBEY = False
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'final_spider.middlewares.FinalSpiderSpiderMiddleware': 1,
-   # 'final_spider.middlewares.JsPageMiddleware': 2,
-   'final_spider.middlewares.ProxyMiddleware': 100,
+    'final_spider.middlewares.FinalSpiderSpiderMiddleware': 1,
+    'final_spider.middlewares.ProxyMiddleware': 100,
 }
 
+DOWNLOAD_TIMEOUT = 3
+
 # PROXIES = [
-#     {'ip_port': '122.114.31.177:808', 'user_pass': ''},
-#     {'ip_port': '61.135.217.7:80', 'user_pass': ''},
+#     {'183.129.93.76:24608'},
 # ]
 
 # Enable or disable extensions

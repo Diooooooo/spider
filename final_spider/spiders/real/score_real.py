@@ -18,7 +18,8 @@ class ScoreSpider(scrapy.Spider):
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
-        leagues = ['英超', '西甲', '意甲', '德甲', '法甲', '世界杯', '欧冠', '欧罗巴']
+        # leagues = ['英超', '西甲', '意甲', '德甲', '法甲', '世界杯', '欧冠', '欧罗巴', '中超']
+        leagues = ['挪超', '瑞典超', '智甲', '比甲', '巴甲']
         for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
             for li in t.xpath('li'):
                 for d in li.xpath('div/a'):
@@ -37,9 +38,9 @@ class ScoreSpider(scrapy.Spider):
     def parse_item_item_info(self, response):
         year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
         if '/' in year:
-            year = year.split('/')[1] + '-00-00'
+            year = year.split('/')[1] + '-01-01'
         else:
-            year = year + '-00-00'
+            year = year + '-01-01'
         # 射手榜
         for q in response.xpath('//table[@class="lstable2 lshesb_list_s jTrHover"]/tr'):
             ssi = ScoreSportsmanItem()
@@ -70,9 +71,9 @@ class ScoreSpider(scrapy.Spider):
         leagueName = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
         year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
         if '/' in year:
-            year = year.split('/')[1] + '-00-00'
+            year = year.split('/')[1] + '-01-01'
         else:
-            year = year + '-00-00'
+            year = year + '-01-01'
         for u in response.xpath('//div[@id="match_hot_div"]/a'):
             if u.xpath('text()').extract_first() in types:
                 tid = response.url.split('-')[-1]
@@ -96,11 +97,11 @@ class ScoreSpider(scrapy.Spider):
         elif 'away' == typeName:
             typeName = '客场'
         jsonInfo = json.loads(response.body.decode())
-        score = ScoreItem()
-        score['type_name'] = unquote(typeName)
-        score['league_name'] = unquote(response.url.split('=')[-2].split('&')[0])
-        score['league_year'] = response.url.split('=')[-1]
         for j in jsonInfo:
+            score = ScoreItem()
+            score['type_name'] = unquote(typeName)
+            score['league_name'] = unquote(response.url.split('=')[-2].split('&')[0])
+            score['league_year'] = response.url.split('=')[-1]
             score['team_name'] = str(j['teamname'])
             score['season_count'] = str(j['total'])
             score['season_vicotry'] = str(j['win'])

@@ -60,7 +60,6 @@ class SeasonRealItem(scrapy.Item):
     type_name = scrapy.Field()
     sub_type_name = scrapy.Field()
     fid = scrapy.Field()
-    playing = scrapy.Field()
 
 
 class SeasonOldItem(scrapy.Item):
@@ -222,3 +221,7 @@ class NewsItem(scrapy.Item):
     url = scrapy.Field()
     description = scrapy.Field()
     img = scrapy.Field()
+
+class SeasonTime(scrapy.Item):
+    fid = scrapy.Field()
+    playing = scrapy.Field()

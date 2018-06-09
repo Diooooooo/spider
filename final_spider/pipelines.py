@@ -75,6 +75,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_lottery, item)
         elif item.__class__.__name__ == 'NewsItem':
             query = self.dbpool.runInteraction(self._conditional_news, item)
+        elif item.__class__.__name__ == 'SeasonTime':
+            query = self.dbpool.runInteraction(self._conditional_time, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -82,6 +84,11 @@ class FinalSpiderPipeline(object):
     def _conditional_country(self, tx, item):
         tx.execute('INSERT INTO qsr_league_country(country_name) VALUES(\"' + item['country']
                    + '\") ON DUPLICATE KEY UPDATE country_name=country_name')
+
+    def _conditional_time(self, tx, item):
+        update = 'UPDATE qsr_team_season s SET s.season_playing_time = "' \
+                 + str(item['playing']) + '" WHERE s.season_fid = "' + str(item['fid']) + '"'
+        tx.execute(update)
 
     def _conditional_league(self, tx, item):
         tx.execute('INSERT INTO qsr_league(country_id ,lea_name ,lea_full_name, lea_fid) '
@@ -192,11 +199,11 @@ class FinalSpiderPipeline(object):
                      "INNER JOIN (SELECT \"" + item['start_time'] + "\" AS play_time, \"" \
                      + item['team_a'] + "\" AS team_a, \"" + item['team_b'] + "\" AS team_b, \"" \
                      + str(item['status']) + "\" AS status_name, \"" + item['fid'] + "\" AS season_fid, \"" \
-                     + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b, \"" \
-                     + str(item['playing']) + "\" AS playing) i ON s.season_fid = i.season_fid " \
+                     + str(item['score_a']) + "\" AS fs_a, \"" + str(item['score_b']) + "\" AS fs_b" \
+                     ") i ON s.season_fid = i.season_fid " \
                      "INNER JOIN qsr_team a ON i.team_a = a.team_name AND s.season_team_a = a.team_id " \
                      "INNER JOIN qsr_team b ON i.team_b = b.team_name AND s.season_team_b = b.team_id " \
-                     "SET s.status_id = i.status_name, s.season_playing_time = i.playing, " \
+                     "SET s.status_id = i.status_name, " \
                      "season_fs_a = i.fs_a, season_fs_b = i.fs_b"
         tx.execute(insertInto)
 

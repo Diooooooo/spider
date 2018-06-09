@@ -4,7 +4,6 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-import base64
 from random import choice
 
 from scrapy import signals
@@ -26,6 +25,7 @@ class FinalSpiderSpiderMiddleware(object):
         # s = cls()
         # crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         # return s
+        print('init user agents')
         user_agents = choice(USER_AGENT_CHOICES)
 
         if not user_agents:
@@ -72,16 +72,16 @@ class FinalSpiderSpiderMiddleware(object):
         self.enabled = getattr(spider, 'rotate_user_agent', self.enabled)
 
     def process_request(self, request, spider):
-        if not self.enabled or not self.user_agents:
-            return
-        request.headers['user-agent'] = choice(self.user_agents)
+        userAgents = choice(self.user_agents)
+        request.headers['user-agent'] = userAgents
+        print('working user agents : ' + self.user_agents)
 
 
 class ProxyMiddleware(object):
 
     def get_random_proxy(self):
         while 1:
-            with open('c:\\work\\kuai_proxy') as f:
+            with open('/root/test_spider/final_spider/proxy') as f:
                 proxies = f.readlines()
             if proxies:
                 break
@@ -89,13 +89,12 @@ class ProxyMiddleware(object):
         return proxy
 
     def process_request(self, request, spider):
-        proxy = 'https://' + self.get_random_proxy()
-        print('working proxy:' + proxy)
+        proxy = 'http://' + self.get_random_proxy()
         request.meta['proxy'] = proxy
-        encoded_user_pass = base64.b64encode(b'18612045235:a0mylhwh').decode('utf-8')
-        request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
+        print('working proxy : ' + proxy)
 
     def proxcess_response(self, request, response, spider):
+        print('working status : ' + response.status)
         if response.stauts != 200:
             proxy = self.get_random_proxy()
             request.meta['proxy'] = proxy

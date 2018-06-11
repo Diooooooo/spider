@@ -24,7 +24,7 @@ class Proxies(object):
 
     def get_proxies_kuai(self):
         socket.setdefaulttimeout(2)
-        j = requests.get('http://dps.kdlapi.com/api/getdps/?orderid=972852000686453&num=100&ut=1&format=json&sep=1')
+        j = requests.get('http://dps.kdlapi.com/api/getdps/?orderid=792852000686458&num=100&ut=1&format=json&sep=1')
         infoJson = json.loads(j.text)
         if infoJson['code'] == 0:
             for i in infoJson['data']['proxy_list']:

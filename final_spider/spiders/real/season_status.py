@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
+
+import requests
 import scrapy
 
 
@@ -15,10 +18,10 @@ class SeasonTypeDemoSpider(scrapy.Spider):
     start_urls = ['https://live.500.com/2h1.php']
 
     def parse(self, response):
-        # jsonInfo = json.loads(requests.get('http://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert').text)
-        jsoninfos = ['a724050']
-        # for j in jsonInfo['datalist']:
-        #     jsoninfos.append('a' + str(j['season_fid']))
+        jsonInfo = json.loads(requests.get('http://www.liangqiujiang.com/api/internal/getPlayingSeason?manager=12345qwert').text)
+        jsoninfos = []
+        for j in jsonInfo['datalist']:
+            jsoninfos.append('a' + str(j['season_fid']))
 
         for tr in response.xpath('//table[@class="bf_tablelist01"]/tbody/tr'):
             if tr.xpath('@id').extract_first() in jsoninfos:

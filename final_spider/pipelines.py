@@ -77,6 +77,12 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_news, item)
         elif item.__class__.__name__ == 'SeasonTime':
             query = self.dbpool.runInteraction(self._conditional_time, item)
+        elif item.__class__.__name__ == 'SportteryItem':
+            query = self.dbpool.runInteraction(self._conditional_sporttery, item)
+        elif item.__class__.__name__ == 'InfoItem':
+            query = self.dbpool.runInteraction(self._conditional_had, item)
+        elif item.__class__.__name__ == 'MatchInfoItem':
+            query = self.dbpool.runInteraction(self._conditional_matchInfo, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -441,6 +447,79 @@ class FinalSpiderPipeline(object):
                          'title'] + '", "' + \
                      item['content'] + '", "' + item['url'] + '", "' + item['source'] + '", "' + item['time'] + '", "' + \
                      item['img'] + '")'
+        tx.execute(insertInto)
+
+    def _conditional_sporttery(self, tx, item):
+        insertInto = 'INSERT INTO qsr_sporttery(target_id, week, num,sporttery_date,sporttery_time,' \
+                     'b_date,status_id,is_hot,l_id,' \
+                     'l_cn,h_id,h_cn,a_id,a_cn,index_show,sporttery_show,l_cn_abbr,h_cn_abbr,a_cn_abbr,h_order,' \
+                     'a_order,h_id_dc,a_id_dc,l_background_color,weather,weather_city,weather_pic,temperature,' \
+                     'last_updated) ' \
+                     'SELECT i._id, i._week, i._num, i._date, i._time, i._b_date, i._status, i._hot, i._l_id, ' \
+                     'i._l_cn, i._h_id, i._h_cn, i._a_id, i._a_cn, i._index_show, i._show, i._l_cn_abbr, ' \
+                     'i._h_cn_abbr, i._a_cn_abbr, i._h_order, i._a_order, i._h_id_dc, i._a_id_dc, ' \
+                     'i._l_background_color, i._weather, i._weather_city, i._weather_pic, i._temperature, ' \
+                     'i._last_updated FROM (SELECT "' + str(item['id']) + '" AS _id, "' \
+                     + str(item['week']) + '" AS _week, "' + str(item['num']) + '" AS _num, "' \
+                     + str(item['date']) + '" AS _date, "' + str(item['time']) + '" AS _time, "' \
+                     + str(item['b_date']) + '" AS _b_date, "' + str(item['status']) + '" AS _status, "' \
+                     + str(item['hot']) + '" AS _hot, "' + str(item['l_id']) + '" AS _l_id, "' \
+                     + str(item['l_cn']) + '" AS _l_cn, "' + str(item['h_id']) + '" AS _h_id, "' \
+                     + str(item['h_cn']) + '" AS _h_cn, "' + str(item['a_id']) + '" AS _a_id, "' \
+                     + str(item['a_cn']) + '" AS _a_cn, "' + str(item['index_show']) + '" AS _index_show, "' \
+                     + str(item['show']) + '" AS _show, "' + str(item['l_cn_abbr']) + '" AS _l_cn_abbr, "' \
+                     + str(item['h_cn_abbr']) + '" AS _h_cn_abbr, "' + str(item['a_cn_abbr']) + '" AS _a_cn_abbr, "' \
+                     + str(item['h_order']) + '" AS _h_order, "' + str(item['a_order']) + '" AS _a_order, "' \
+                     + str(item['h_id_dc']) + '" AS _h_id_dc, "' + str(item['a_id_dc']) + '" AS _a_id_dc, "' \
+                     + str(item['l_background_color']) + '" AS _l_background_color, "' \
+                     + str(item['weather']) + '" AS _weather, "' + str(item['weather_city']) + '" AS _weather_city, "' \
+                     + str(item['weather_pic']) + '" AS _weather_pic, "' \
+                     + str(item['temperature']) + '" AS _temperature, "' \
+                     + str(item['last_updated']) + '" AS _last_updated) i ' \
+                     'ON DUPLICATE KEY UPDATE week = i._week, num = i._num, sporttery_date = i._date, ' \
+                     'sporttery_time = i._time, ' \
+                     'b_date = i._b_date, status_id = i._status, is_hot = i._hot, l_id = i._l_id, l_cn = i._l_cn, ' \
+                     'h_id = i._h_id, h_cn = i._h_cn, a_id = i._a_id, a_cn = i._a_cn, index_show = i._index_show,' \
+                     'sporttery_show = i._show, l_cn_abbr = i._l_cn_abbr, h_cn_abbr = i._h_cn_abbr, ' \
+                     'a_cn_abbr = i._a_cn_abbr, h_order = i._h_order, a_order = i._a_order, h_id_dc = i._h_id_dc,' \
+                     'a_id_dc = i._a_id_dc, l_background_color = i._l_background_color, weather = i._weather,' \
+                     'weather_city = i._weather_city, weather_pic = i._weather_pic, temperature = i._temperature, ' \
+                     'last_updated = i._last_updated'
+        tx.execute(insertInto)
+
+    def _conditional_had(self, tx, item):
+        insertInto = 'INSERT INTO qsr_sporttery_had ( type_id ,sporttery_id ,a ,d ,h ,goalline ,p_code ,o_type ,p_id,' \
+                     'p_status_id ,single ,allup ,fixedodds ,cbt ,had_int ,vbt ,h_trend ,a_trend ,d_trend ,' \
+                     'l_trend,expand ) ' \
+                     'SELECT i._type_id, i._sporttery_id, i._a, i._d, i._h, i._goalline, i._p_code, i._o_type, ' \
+                     'i._p_id, i._p_status_id, i._single, i._allup, i._fixedodds, i._cbt, i._had_int, i._vbt, ' \
+                     'i._h_trend, i._a_trend, i._d_trend, i._l_trend, i._expand ' \
+                     'FROM (SELECT "' + str(item['type_id']) + '" AS _type_id, "' + str(item['id']) + '" AS _sporttery_id, "' \
+                     + str(item['a']) + '" AS _a, "' + str(item['d']) + '" AS _d, "' + str(item['h']) + '" AS _h, "' \
+                     + str(item['goalline']) + '" AS _goalline, "' + str(item['p_code']) + '" AS _p_code, "' \
+                     + str(item['o_type']) + '" AS _o_type, "' + str(item['p_id']) + '" AS _p_id, "' \
+                     + str(item['p_status']) + '" AS _p_status_id, "' + str(item['single']) + '" AS _single, "' \
+                     + str(item['allup']) + '" AS _allup, "' + str(item['fixedodds']) + '" AS _fixedodds, "' \
+                     + str(item['cbt']) + '" AS _cbt, "' + str(item['int']) + '" AS _had_int, "' + str(item['vbt']) + '" AS _vbt, "' \
+                     + str(item['h_trend']) + '" AS _h_trend, "' + str(item['a_trend']) + '" AS _a_trend, "' \
+                     + str(item['d_trend']) + '" AS _d_trend, "' + str(item['l_trend']) + '" AS _l_trend, "' \
+                     + str(item['expand']) + '" AS _expand) i ' \
+                     'ON DUPLICATE KEY UPDATE type_id = i._type_id, sporttery_id = i._sporttery_id, a = i._a, ' \
+                     'd = i._d, h = i._d, goalline = i._goalline, p_code = i._p_code, o_type = i._o_type, ' \
+                     'p_id = i._p_id, p_status_id = i._p_status_id, single = i._single, allup = i._allup, ' \
+                     'fixedodds = i._fixedodds, cbt = i._cbt, had_int = i._had_int, vbt = i._vbt, ' \
+                     'h_trend = i._h_trend, a_trend = i._a_trend, d_trend = i._d_trend, l_trend = i._l_trend, ' \
+                     'expand = i._expand'
+        tx.execute(insertInto)
+
+    def _conditional_matchInfo(self, tx, item):
+        insertInto = 'INSERT INTO qsr_spottery_match(_id, m_id, i_id, prompt, checked) ' \
+                     'SELECT i._id, i._mId, i._iId, i._prompt, i._checked ' \
+                     'FROM (SELECT "' + str(item['id']) + '" AS _id, "' + str(item['m_id']) + '" AS _mId, "' \
+                     + str(item['i_id']) + '" AS _iId, "' + str(item['prompt']) + '" AS _prompt, "' \
+                     + str(item['checked']) + '" AS _checked) i ' \
+                     'ON DUPLICATE KEY UPDATE _id = i._id, m_id = i._mId, i_id = i._iId, ' \
+                     'prompt = i._prompt, checked = i._checked'
         tx.execute(insertInto)
 
     def _handle_error(self, failue, item, spider):

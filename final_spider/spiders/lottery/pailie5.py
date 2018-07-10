@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from final_spider.items import LottoResult
+from final_spider.items import LottoResult, LottoResultItem
 
 
 class PailieFiveSpider(scrapy.Spider):
@@ -35,4 +35,14 @@ class PailieFiveSpider(scrapy.Spider):
                                   .extract()).replace('    ', ',')
             s = response.xpath('//div[@class="letou_kj"]/table/tr')
             lotto['prize'] = s[len(s) - 1].xpath('td')[3].xpath('b')[0].xpath('text()')[0].extract()[:-2]
+            for tr in response.xpath('//div[@class="letou_kj"]/table/tr')[1:-1]:
+                item = LottoResultItem()
+                item['lt_id'] = 4
+                item['no'] = a
+                item['type_id'] = 1
+                item['level'] = tr.xpath('td')[0].xpath('text()')[0].extract()
+                item['count'] = tr.xpath('td')[1].xpath('text()')[0].extract()[:-2]
+                item['prize'] = tr.xpath('td')[2].xpath('text()')[0].extract()[:-2]
+                item['description'] = ''
+                yield item
             yield lotto

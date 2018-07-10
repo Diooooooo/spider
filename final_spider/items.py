@@ -312,3 +312,13 @@ class LottoResult(scrapy.Item):
     number = scrapy.Field()
     type_id = scrapy.Field()
     sale = scrapy.Field()
+
+
+class LottoResultItem(scrapy.Item):
+    lt_id = scrapy.Field()
+    no = scrapy.Field()
+    type_id = scrapy.Field()
+    level = scrapy.Field()
+    count = scrapy.Field()
+    prize = scrapy.Field()
+    description = scrapy.Field()

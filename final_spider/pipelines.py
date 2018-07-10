@@ -87,6 +87,8 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_sportteryResult, item)
         elif item.__class__.__name__ == 'LottoResult':
             query = self.dbpool.runInteraction(self._conditional_lottoResult, item)
+        elif item.__class__.__name__ == 'LottoResultItem':
+            query = self.dbpool.runInteraction(self._conditional_lottoResultItem, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -541,6 +543,14 @@ class FinalSpiderPipeline(object):
                  'VALUES ("' + str(item['type_id']) + '", "' + str(item['no']) + '", "' + str(item['date']) + '", "' \
                  + str(item['prize']) + '", "' + str(item['sale']) + '", "' + str(item['plan']) + '", "' \
                  + str(item['serial']) + '", "' + str(item['number']) + '")'
+        tx.execute(insert)
+
+    def _conditional_lottoResultItem(self, tx, item):
+        insert = 'INSERT INTO qsr_lottoy_result_item(lotto_type_id,lotto_no,type_id,item_level,' \
+                 'item_level_count,item_level_prize,description)' \
+                 'VALUES("' + str(item['lt_id']) + '", "' + str(item['no']) + '", "' + str(item['type_id']) + '", "' \
+                 + str(item['level']) + '", "' + str(item['count']) + '", "' + str(item['prize']) + '", "' \
+                 + str(item['description']) + '")'
         tx.execute(insert)
 
     def _handle_error(self, failue, item, spider):

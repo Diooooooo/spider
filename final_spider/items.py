@@ -290,3 +290,25 @@ class MatchInfoItem(scrapy.Item):
     i_id = scrapy.Field()
     prompt = scrapy.Field()
     checked = scrapy.Field()
+
+
+class SportteryResult(scrapy.Item):
+    target_id = scrapy.Field()
+    type_id = scrapy.Field()
+    pool_rs = scrapy.Field()
+    prs_name = scrapy.Field()
+    goalline = scrapy.Field()
+    single = scrapy.Field()
+    odds = scrapy.Field()
+    description = scrapy.Field()
+
+
+class LottoResult(scrapy.Item):
+    no = scrapy.Field()
+    date = scrapy.Field()
+    prize = scrapy.Field()
+    plan = scrapy.Field()
+    serial = scrapy.Field()
+    number = scrapy.Field()
+    type_id = scrapy.Field()
+    sale = scrapy.Field()

@@ -83,6 +83,10 @@ class FinalSpiderPipeline(object):
             query = self.dbpool.runInteraction(self._conditional_had, item)
         elif item.__class__.__name__ == 'MatchInfoItem':
             query = self.dbpool.runInteraction(self._conditional_matchInfo, item)
+        elif item.__class__.__name__ == 'SportteryResult':
+            query = self.dbpool.runInteraction(self._conditional_sportteryResult, item)
+        elif item.__class__.__name__ == 'LottoResult':
+            query = self.dbpool.runInteraction(self._conditional_lottoResult, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item
@@ -299,7 +303,7 @@ class FinalSpiderPipeline(object):
         tx.execute(relation)
 
     def _conditional_ouzhi(self, tx, item):
-        insertInto = "INSERT INTO qsr_team_season_lottery( season_id ,type_id ,lottery_win ,lottery_deuce ," \
+        insertInto = "INSERT INTO qsr_team_season_lottery_logs( season_id ,type_id ,lottery_win ,lottery_deuce ," \
                      "lottery_lose ,final_win ,final_deuce ,final_lose ) " \
                      "SELECT s.season_id, t.type_id, i.lottery_win, i.lottery_deuce, " \
                      "i.lottery_lose, i.final_win, i.final_deuce, i.final_lose " \
@@ -522,14 +526,30 @@ class FinalSpiderPipeline(object):
                      'prompt = i._prompt, checked = i._checked'
         tx.execute(insertInto)
 
+    def _conditional_sportteryResult(self, tx, item):
+        insert = 'INSERT INTO qsr_sporttery_result(target_id,type_id,pool_rs,prs_name,goalline,single,odds,' \
+                 'description) VALUES ("' + str(item['target_id']) + '", "' + str(item['type_id']) + '", "' \
+                 + str(item['pool_rs']) + '", "' + str(item['prs_name']) + '", "' + str(item['goalline']) + '", "' \
+                 + str(item['single']) + '", "' + str(item['odds']) + '", "' + str(item['description']) + '"); ' \
+                 'UPDATE qsr_sporttery s SET s.status_id = 4 WHERE s.target_id = ' \
+                 + str(item['target_id']) + ' AND s.status_id = 2 '
+        tx.execute(insert)
+
+    def _conditional_lottoResult(self, tx, item):
+        insert = 'INSERT INTO qsr_lottoy_result(type_id, lotto_no,lotto_date,lotto_prize,lotto_sale,lotto_plan,' \
+                 'lotto_serial,lotto_number) ' \
+                 'VALUES ("' + str(item['type_id']) + '", "' + str(item['no']) + '", "' + str(item['date']) + '", "' \
+                 + str(item['prize']) + '", "' + str(item['sale']) + '", "' + str(item['plan']) + '", "' \
+                 + str(item['serial']) + '", "' + str(item['number']) + '")'
+        tx.execute(insert)
+
     def _handle_error(self, failue, item, spider):
-        print('error')
         print(item)
         print(spider)
         print('-------------------' + str(failue) + '---------------------------')
 
 
-class TeamPipeline(ImagesPipeline):
+class DownloadImagePipeline(ImagesPipeline):
 
     def file_path(self, request, response=None, info=None):
         image_guid = request.url.split('/')[-1]

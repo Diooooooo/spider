@@ -90,7 +90,7 @@ ROBOTSTXT_OBEY = False
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'final_spider.middlewares.FinalSpiderSpiderMiddleware': 1,
-   # 'final_spider.middlewares.ProxyMiddleware': 100
+    # 'final_spider.middlewares.ProxyMiddleware': 100
 }
 
 DOWNLOAD_TIMEOUT = 3
@@ -109,7 +109,7 @@ DOWNLOAD_TIMEOUT = 3
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'final_spider.pipelines.FinalSpiderPipeline': 300,
-   'final_spider.pipelines.TeamPipeline': 400,
+   'final_spider.pipelines.DownloadImagePipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

@@ -88,7 +88,7 @@ class FinalSpiderPipeline(object):
         elif item.__class__.__name__ == 'LottoResult':
             query = self.dbpool.runInteraction(self._conditional_lottoResult, item)
         elif item.__class__.__name__ == 'LottoResultItem':
-            query = self.dbpool.runInteraction(self._conditional_lottoResult, item)
+            query = self.dbpool.runInteraction(self._conditional_lottoResultItem, item)
 
         query.addErrback(self._handle_error, item, spider)  # 调用异常处理方法
         return item

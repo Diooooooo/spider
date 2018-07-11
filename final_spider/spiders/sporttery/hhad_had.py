@@ -285,4 +285,9 @@ class HhadAndHadSpider(scrapy.Spider):
                                 match['checked'] = infos[i]['match_info'][0]['checked']
                                 continue
                         yield match
+            try:
+                if not sporttery['weather_pic']:
+                    sporttery['weather_pic'] = ''
+            except KeyError:
+                sporttery['weather_pic'] = ''
             yield sporttery

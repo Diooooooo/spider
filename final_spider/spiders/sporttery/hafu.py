@@ -187,4 +187,9 @@ class HafuSpider(scrapy.Spider):
                     hafu['h'] = ''
                     hafu['expand'] = expand
                     yield hafu
+            try:
+                if not sporttery['weather_pic']:
+                    sporttery['weather_pic'] = ''
+            except KeyError:
+                sporttery['weather_pic'] = ''
             yield sporttery

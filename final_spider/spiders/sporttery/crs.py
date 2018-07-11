@@ -3,7 +3,7 @@ import json
 
 import scrapy
 
-from final_spider.items import SportteryItem, InfoItem, MatchInfoItem
+from final_spider.items import SportteryItem, InfoItem
 
 
 class CrsSpider(scrapy.Spider):
@@ -108,7 +108,8 @@ class CrsSpider(scrapy.Spider):
                     continue
                 if k == 'weather_pic':
                     if infos[i]['weather_pic']:
-                        sporttery['weather_pic'] = 'http://qsr-app.oss-cn-shenzhen.aliyuncs.com/weather/' + infos[i]['weather_pic'][51:]
+                        sporttery['weather_pic'] = 'http://qsr-app.oss-cn-shenzhen.aliyuncs.com/weather/' \
+                                                   + infos[i]['weather_pic'][51:]
                     continue
                 sporttery['last_updated'] = last['last_updated']
                 if k == 'crs':
@@ -194,4 +195,9 @@ class CrsSpider(scrapy.Spider):
                             crs['h'] = infos[i]['crs'][h]
                     crs['expand'] = expand
                     yield crs
+            try:
+                if not sporttery['weather_pic']:
+                    sporttery['weather_pic'] = ''
+            except KeyError:
+                sporttery['weather_pic'] = ''
             yield sporttery

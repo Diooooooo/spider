@@ -2,6 +2,7 @@
 import json
 import urllib
 
+import requests
 import scrapy
 from bs4 import BeautifulSoup
 from scrapy import Request
@@ -19,35 +20,31 @@ class LqjSpider(scrapy.Spider):
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
-        # types = ['英超', '西甲', '意甲', '德甲', '法甲', '欧冠', '欧罗巴', '世界杯', '中超', '英乙', '英足总杯', '英联杯',
-        #          '英甲', '西乙', '西班牙杯', '意乙', '意杯', '日联杯', '德乙', '德国杯', '巴西杯', '法国杯',
-        #          '法乙', '欧超杯', '美职联', '智甲', '亚洲杯', '亚冠杯', '解放者杯', '友谊赛', '亚挑杯', '世青赛',
-        #          '亚协杯', '比甲', '比杯', '丹超', '俄超', 'K1联赛', '荷甲', '荷乙', '马来超', '日职', '挪超', '葡超',
-        #          '日职乙', '瑞士超', '瑞典超', '苏超', '土超', '爱联杯', '以超', '阿超杯', '巴圣锦', '墨超杯', '澳超']
-        types = ['世界杯', '友谊赛', '挪超', '瑞典超', '巴甲', '解放者杯', '比甲', '南俱杯', '巴西杯']
-        for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
-            for li in t.xpath('li'):
-                for d in li.xpath('div/a'):
-                    if d.xpath('text()').extract_first() in types:
-                        yield Request(response.urljoin(d.xpath('@href').extract_first()),
+        services = json.loads(requests.get('http://192.168.1.127/api/internal'
+                                           '/getRegularLeagues?manager=12345qwert').text)
+        types =[]
+        if services['status']['code'] == 0:
+            for i in services['datalist']:
+                types.append(i['n'])
+            for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
+                for li in t.xpath('li'):
+                    for d in li.xpath('div/a'):
+                        if d.xpath('text()').extract_first() in types:
+                            yield Request(response.urljoin(d.xpath('@href').extract_first()),
+                                          self.parse_item_info, dont_filter=True)
+
+            for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
+                for li in t.xpath('li'):
+                    if li.xpath('a/span/text()').extract_first() in types:
+                        yield Request(response.urljoin(li.xpath('a/@href').extract_first()),
                                       self.parse_item_info, dont_filter=True)
 
-        for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[:1]:
-            for li in t.xpath('li'):
-                if li.xpath('a/span/text()').extract_first() in types:
-                    yield Request(response.urljoin(li.xpath('a/@href').extract_first()),
-                                  self.parse_item_info, dont_filter=True)
-
-        for t in response.xpath('//table[@class="lrace_bei"]'):
-            for tr in t.xpath('tr'):
-                for td in tr.xpath("td"):
-                    if td.xpath('a/text()').extract_first() in types:
-                        yield Request(response.urljoin(td.xpath('a/@href').extract_first()),
-                                      self.parse_item_info, dont_filter=True)
-
-    # def parse_info(self, response):
-    #     for t in response.xpath('//ul[@class="ldrop_list"]/li')[1:4]:
-    #         yield Request(response.urljoin(t.xpath('a/@href').extract_first()), self.parse_item_info)
+            for t in response.xpath('//table[@class="lrace_bei"]'):
+                for tr in t.xpath('tr'):
+                    for td in tr.xpath("td"):
+                        if td.xpath('a/text()').extract_first() in types:
+                            yield Request(response.urljoin(td.xpath('a/@href').extract_first()),
+                                          self.parse_item_info, dont_filter=True)
 
     def parse_item_info(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),

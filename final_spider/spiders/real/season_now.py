@@ -20,7 +20,7 @@ class LqjSpider(scrapy.Spider):
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
-        services = json.loads(requests.get('http://192.168.1.127/api/internal'
+        services = json.loads(requests.get('http://api.dio.com/api/internal'
                                            '/getRegularLeagues?manager=12345qwert').text)
         types =[]
         if services['status']['code'] == 0:

@@ -26,6 +26,7 @@ class SeasonTypeDemoSpider(scrapy.Spider):
         for t in txt:
             if t[0] in jsonInfos:
                 time = SeasonTime()
+                playing = 0
                 if 2 == t[1]:
                     playing = 45
                 elif 0 == t[1]:

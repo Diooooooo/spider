@@ -519,7 +519,7 @@ class FinalSpiderPipeline(object):
         tx.execute(insertInto)
 
     def _conditional_matchInfo(self, tx, item):
-        insertInto = 'INSERT INTO qsr_spottery_match(_id, m_id, i_id, prompt, checked) ' \
+        insertInto = 'INSERT INTO qsr_sporttery_match(_id, m_id, i_id, prompt, checked) ' \
                      'SELECT i._id, i._mId, i._iId, i._prompt, i._checked ' \
                      'FROM (SELECT "' + str(item['id']) + '" AS _id, "' + str(item['m_id']) + '" AS _mId, "' \
                      + str(item['i_id']) + '" AS _iId, "' + str(item['prompt']) + '" AS _prompt, "' \

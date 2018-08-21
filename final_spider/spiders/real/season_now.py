@@ -20,12 +20,12 @@ class LqjSpider(scrapy.Spider):
     start_urls = ['http://liansai.500.com/']
 
     def parse(self, response):
-        services = json.loads(requests.get('http://api.dio.com/api/internal'
+        services = json.loads(requests.get('http://www.liangqiujiang.com/api/internal'
                                            '/getRegularLeagues?manager=12345qwert').text)
-        types =[]
+        types = ['法联杯']
         if services['status']['code'] == 0:
-            for i in services['datalist']:
-                types.append(i['n'])
+            # for i in services['datalist']:
+            #     types.append(i['n'])
             for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
                 for li in t.xpath('li'):
                     for d in li.xpath('div/a'):
@@ -47,6 +47,10 @@ class LqjSpider(scrapy.Spider):
                                           self.parse_item_info, dont_filter=True)
 
     def parse_item_info(self, response):
+        yield Request(response.urljoin(response.xpath('//ul[@class="ldrop_list"]/li[1]/a/@href').extract_first()),
+                      self.parse_item_info_child, dont_filter=True)
+
+    def parse_item_info_child(self, response):
         yield Request(response.urljoin(response.xpath('//div[@class="lcol_tit_r"][1]/a/@href').extract_first()),
                       self.parse_detail_info, dont_filter=True)
 

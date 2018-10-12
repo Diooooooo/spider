@@ -22,10 +22,12 @@ class LqjSpider(scrapy.Spider):
     def parse(self, response):
         services = json.loads(requests.get('http://www.liangqiujiang.com/api/internal'
                                            '/getRegularLeagues?manager=12345qwert').text)
-        types = ['法联杯']
+        types = []
         if services['status']['code'] == 0:
             # for i in services['datalist']:
             #     types.append(i['n'])
+            types = ['欧国联']
+
             for t in response.xpath('//ul[@class="lallrace_main_list clearfix"]')[1:]:
                 for li in t.xpath('li'):
                     for d in li.xpath('div/a'):
@@ -67,7 +69,7 @@ class LqjSpider(scrapy.Spider):
                 if '/' in year:
                     year = year.split('/')[0] + '-01-01'
                 else:
-                    year = year + '-01-01'
+                    year = str(int(year) - 1) + '-01-01'
                 url = 'http://liansai.500.com/index.php?c=score&a=getmatch&stid=%s&round=%s' % (str(response.url).split("-")[2][:-1], d.xpath('@data-group').extract_first())
                 infoJson = json.loads(str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url)).read(), "html.parser")))
                 for t in infoJson:
@@ -107,7 +109,7 @@ class LqjSpider(scrapy.Spider):
             if '/' in year:
                 year = year.split('/')[0] + '-01-01'
             else:
-                year = year + '-01-01'
+                year = str(int(year) - 1) + '-01-01'
             for s in response.xpath('//ul[@class="lsaiguo_round_list clearfix"]/li'):
                 url = 'http://liansai.500.com/index.php?c=score&a=getmatch&stid=%s&round=%s' % (
                 str(response.url).split("-")[2][:-1], s.xpath('a/@data-group').extract_first())
@@ -143,6 +145,41 @@ class LqjSpider(scrapy.Spider):
             for s in response.xpath('//tbody[@id="match_list_tbody"]/tr'):
                 for bs in self.buildSeasonItem(response, s):
                     yield bs
+        elif response.xpath('//div[@id="div_group_list"]'):
+            for d in response.xpath('//div[@id="div_group_list"]/a')[1:]:
+                year = response.xpath('//span[@class="ldrop_tit_txt"]/text()').extract_first()[:-2]
+                if '/' in year:
+                    year = year.split('/')[0] + '-01-01'
+                else:
+                    year = str(int(year) - 1) + '-01-01'
+                url = 'http://liansai.500.com/index.php?c=score&a=getmatch&stid=%s&round=%s' % (str(response.url).split("-")[2][:-1], d.xpath('@data-group').extract_first())
+                infoJson = json.loads(str(BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url)).read(), "html.parser")))
+                for t in infoJson:
+                    season = SeasonItem()
+                    season['league_name'] = response.xpath(
+                        '//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[:-2]
+                    season['type_name'] = d.xpath('text()').extract_first()
+                    season['sub_type_name'] = ''
+                    season['game_week'] = t['round']
+                    season['start_time'] = t['stime']
+                    season['team_a'] = t['hname']
+                    season['team_b'] = t['gname']
+                    if t['status'] == '5':
+                        season['score_a'] = t['hscore']
+                        season['score_b'] = t['gscore']
+                    else:
+                        season['score_a'] = 0
+                        season['score_b'] = 0
+
+                    statusId = 1
+                    if t['status'] in ['-1', '2', '4', '6', '7', '11']:
+                        statusId = 6
+                    if t['status'] == '5':
+                        statusId = 4
+                    season['status'] = statusId
+                    season['fid'] = t['fid']
+                    season['year'] = year
+                    yield season
         else:
             for s in response.xpath('//div[@class="lmb3"]'):
                 for t in s.xpath('table/tbody/tr'):
@@ -154,7 +191,7 @@ class LqjSpider(scrapy.Spider):
         if '/' in year:
             year = year.split('/')[0] + '-01-01'
         else:
-            year = year + '-01-01'
+            year = str(int(year) - 1) + '-01-01'
         season = SeasonItem()
         season['league_name'] = response.xpath('//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[
                                 :-2]
@@ -190,7 +227,7 @@ class LqjSpider(scrapy.Spider):
             if '/' in year:
                 year = year.split('/')[0] + '-01-01'
             else:
-                year = year + '-01-01'
+                year = str(int(year) - 1) + '-01-01'
             # 遍历赛程 非JSON格式
             for t in response.xpath('//tbody[@id="match_list_tbody"]/tr'):
                 season = SeasonItem()
@@ -226,7 +263,7 @@ class LqjSpider(scrapy.Spider):
                 if '/' in year:
                     year = year.split('/')[0] + '-01-01'
                 else:
-                    year = year + '-01-01'
+                    year = str(int(year) - 1) + '-01-01'
                 season = SeasonItem()
                 season['league_name'] = response.xpath(
                     '//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[
@@ -264,7 +301,7 @@ class LqjSpider(scrapy.Spider):
                     if '/' in year:
                         year = year.split('/')[0] + '-01-01'
                     else:
-                        year = year + '-01-01'
+                        year = str(int(year) - 1) + '-01-01'
                     season = SeasonItem()
                     season['league_name'] = response.xpath(
                         '//ul[@class="lpage_race_nav clearfix"]/li[1]/a/text()').extract_first()[
